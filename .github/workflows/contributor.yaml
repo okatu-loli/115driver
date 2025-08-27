@@ -27,9 +27,9 @@ jobs:
           # Commit message of the GitHub action
           commit_message: "update contributor"
           # Username on commit
-          committer_username: SheltonZHu
+          committer_username: okatu-loli
           # email id of committer
-          committer_email: 498220739@qq.com
+          committer_email: CN_QianShi@hotmail.com
           # check if branch is protected
           auto_detect_branch_protection: true
         env:
