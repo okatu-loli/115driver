@@ -28,9 +28,6 @@ func (c *Pan115Client) Delete(fileIDs ...string) error {
 
 // Rename rename a file or directory with file id and name
 func (c *Pan115Client) Rename(fileID, newName string) error {
-	if isCalledByAlistV3() {
-		return ErrorNotSupportAlist
-	}
 	form := map[string]string{
 		"fid":       fileID,
 		"file_name": newName,
@@ -48,9 +45,6 @@ func (c *Pan115Client) Rename(fileID, newName string) error {
 
 // Move move files or directory into another directory with directroy id
 func (c *Pan115Client) Move(dirID string, fileIDs ...string) error {
-	if isCalledByAlistV3() {
-		return ErrorNotSupportAlist
-	}
 	if len(fileIDs) == 0 {
 		return nil
 	}
@@ -72,9 +66,6 @@ func (c *Pan115Client) Move(dirID string, fileIDs ...string) error {
 
 // Copy copy files or directory into another directory with directroy id
 func (c *Pan115Client) Copy(dirID string, fileIDs ...string) error {
-	if isCalledByAlistV3() {
-		return ErrorNotSupportAlist
-	}
 	if len(fileIDs) == 0 {
 		return nil
 	}

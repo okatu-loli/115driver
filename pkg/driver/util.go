@@ -1,9 +1,7 @@
 package driver
 
 import (
-	"runtime"
 	"strconv"
-	"strings"
 	"time"
 )
 
@@ -29,14 +27,4 @@ func Date() string {
 	GMT, _ := time.LoadLocation("GMT")
 	now := time.Now().In(GMT)
 	return now.Format(time.RFC1123)
-}
-
-func isCalledByAlistV3() bool {
-	pc, _, _, ok := runtime.Caller(3)
-	if !ok {
-		return false
-	}
-
-	funcName := runtime.FuncForPC(pc).Name()
-	return strings.Contains(funcName, "alist")
 }

@@ -22,9 +22,6 @@ func QueryOffset(offset int) Query {
 
 // GetShareSnap get share snap info
 func (c *Pan115Client) GetShareSnap(shareCode, receiveCode, dirID string, Queries ...Query) (*ShareSnapResp, error) {
-	if isCalledByAlistV3() {
-		return nil, ErrorNotSupportAlist
-	}
 	result := ShareSnapResp{}
 	query := map[string]string{
 		"share_code":   shareCode,
