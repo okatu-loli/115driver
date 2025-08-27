@@ -26,6 +26,6 @@ jobs:
           committer_username: okatu-loli
           committer_email: CN_QianShi@hotmail.com
           auto_detect_branch_protection: true
-          pr_title_on_protected: docs(contributor): contributors readme action update
+          pr_title_on_protected: docs(contributor):contributors readme action update
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
