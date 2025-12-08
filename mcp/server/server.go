@@ -65,4 +65,8 @@ func (s *Server) registerTools() {
 	// Register search tools
 	searchTools := tools.NewSearchTools(s.client)
 	searchTools.RegisterTools(s.mcpServer)
+
+	// Register offline tools
+	offlineTools := tools.NewOfflineTools(s.client)
+	offlineTools.RegisterTools(s.mcpServer)
 }
