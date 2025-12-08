@@ -61,4 +61,8 @@ func (s *Server) registerTools() {
 	// Register share tools
 	shareTools := tools.NewShareTools(s.client)
 	shareTools.RegisterTools(s.mcpServer)
+
+	// Register search tools
+	searchTools := tools.NewSearchTools(s.client)
+	searchTools.RegisterTools(s.mcpServer)
 }

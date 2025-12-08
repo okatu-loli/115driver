@@ -435,3 +435,36 @@ func TestGetInfo(t *testing.T) {
 	assert.NoError(t, err)
 	assert.NotEmpty(t, info.SpaceInfo)
 }
+
+func TestSearch(t *testing.T) {
+	down := teardown(t)
+	defer down(t)
+
+	// Test basic search with empty keyword (should return some results)
+	result, err := client.Search(&SearchOption{
+		SearchValue: "2025",
+		Offset:      0,
+		Limit:       10,
+	})
+	assert.Nil(t, err)
+	assert.NotNil(t, result)
+
+	// Test search with specific keyword
+	result, err = client.Search(&SearchOption{
+		SearchValue: "test",
+		Offset:      0,
+		Limit:       10,
+	})
+	assert.Nil(t, err)
+	assert.NotNil(t, result)
+
+	// Test search with file type filter (e.g., images)
+	result, err = client.Search(&SearchOption{
+		SearchValue: "",
+		Type:        3, // Images
+		Offset:      0,
+		Limit:       10,
+	})
+	assert.Nil(t, err)
+	assert.NotNil(t, result)
+}

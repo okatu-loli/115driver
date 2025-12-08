@@ -1,28 +1,103 @@
-# 115driver MCP Usage Example
+# 115driver MCP Server Example
 
-## Introduction
+This document provides examples of how to use the 115driver MCP server.
 
-115driver MCP is a Model Context Protocol compliant service that allows access to 115 cloud storage features through the standard MCP protocol.
+## Starting the Server
 
-## Quick Start
-
-### 1. Compile the MCP server
+To start the MCP server, run:
 
 ```bash
 go build -o mcp-server mcp/main.go
 ```
 
-### 2. Run the MCP server
-
-Valid 115 cloud cookies are required for authentication:
+Then run the server with your 115 cookies:
 
 ```bash
 ./mcp-server --cookie="UID=your_uid;CID=your_cid;SEID=your_seid"
 ```
 
-### 3. Call Tools
+The server will listen on stdin/stdout for MCP requests.
 
-Once the server is running, tools can be invoked via the JSON-RPC protocol. For example, to list the contents of the root directory, send the following JSON:
+## Available Tools
+
+### Directory Tools
+
+1. `listDirectory`: List files and directories in a specific directory
+   - Parameters:
+     - `dir_id` (string): Directory ID to list, default is root directory (0)
+     - `offset` (int64): Offset for pagination, default is 0
+     - `limit` (int64): Number of items to return, default is all items
+
+2. `mkdir`: Create a new directory
+   - Parameters:
+     - `parent_id` (string): Parent directory ID
+     - `name` (string): Name of the new directory
+
+### File Tools
+
+1. `delete`: Delete files or directories
+   - Parameters:
+     - `file_ids` (array of strings): IDs of files or directories to delete
+
+2. `rename`: Rename a file or directory
+   - Parameters:
+     - `file_id` (string): ID of file or directory to rename
+     - `new_name` (string): New name for the file or directory
+
+3. `move`: Move files or directories to another directory
+   - Parameters:
+     - `dir_id` (string): Target directory ID
+     - `file_ids` (array of strings): IDs of files or directories to move
+
+4. `copy`: Copy files or directories to another directory
+   - Parameters:
+     - `dir_id` (string): Target directory ID
+     - `file_ids` (array of strings): IDs of files or directories to copy
+
+5. `stat`: Get detailed information about a file or directory
+   - Parameters:
+     - `file_id` (string): ID of file or directory to get info
+
+### Share Tools
+
+1. `getShareSnap`: Get shared files and directories snapshot information
+   - Parameters:
+     - `share_code` (string): Share code
+     - `receive_code` (string): Receive code
+     - `dir_id` (string): Directory ID to list, default is root directory
+     - `offset` (int): Offset for pagination, default is 0
+     - `limit` (int): Number of items to return, default is 20
+
+### Recycle Bin Tools
+
+1. `listRecycleBin`: List items in the recycle bin
+   - Parameters:
+     - `offset` (string): Offset for pagination, default is "0"
+     - `limit` (string): Number of items to return, default is "40"
+
+2. `revertRecycleBin`: Revert items from the recycle bin
+   - Parameters:
+     - `item_ids` (array of strings): IDs of items to revert
+
+3. `cleanRecycleBin`: Clean items from the recycle bin
+   - Parameters:
+     - `password` (string): Password for cleaning recycle bin
+     - `item_ids` (array of strings): IDs of items to clean
+
+### Search Tools
+
+1. `search`: Search for files and directories in the 115 cloud storage
+   - Parameters:
+     - `search_value` (string): Search keyword
+     - `offset` (int): Offset for pagination, default is 0
+     - `limit` (int): Limit number of results, default is 30
+     - `type` (int): File type filter, 0:all 1:folder 2:document 3:image 4:video 5:audio 6:archive
+     - `order` (string): Sort field, e.g. file_name, user_ptime
+     - `asc` (int): Ascending order, 0:descending 1:ascending
+
+## Example Request/Response
+
+### Basic Directory Listing Request
 
 ```json
 {
@@ -38,11 +113,7 @@ Once the server is running, tools can be invoked via the JSON-RPC protocol. For 
 }
 ```
 
-Where [dir_id](file:///Users/sheltonzhu/github/115driver/pkg/driver/dir.go#L30-L30) of "0" represents the root directory.
-
-### 4. Response Format
-
-The server will return a response in a format similar to the following:
+### Basic Directory Listing Response
 
 ```json
 {
@@ -59,98 +130,42 @@ The server will return a response in a format similar to the following:
 }
 ```
 
-## Tool List
+### Search Request
 
-Currently supported tools:
+Search for documents containing the word "report":
 
-### listDirectory
+```json
+{
+  "jsonrpc": "2.0",
+  "id": "2",
+  "method": "tools/call",
+  "params": {
+    "name": "search",
+    "arguments": {
+      "search_value": "report",
+      "limit": 10,
+      "type": 2
+    }
+  }
+}
+```
 
-Lists files and directories in the specified directory.
+### Search Response
 
-Parameters:
-- [dir_id](file:///Users/sheltonzhu/github/115driver/pkg/driver/dir.go#L30-L30) (string): The ID of the directory to list, defaults to root directory "0"
-- offset (int64, optional): Offset for pagination, defaults to 0
-- limit (int64, optional): Number of items to return, defaults to all items
-
-### mkdir
-
-Create a new directory.
-
-Parameters:
-- parent_id (string, required): Parent directory ID
-- name (string, required): Name of the new directory
-
-### delete
-
-Delete files or directories.
-
-Parameters:
-- file_ids ([]string, required): IDs of files or directories to delete
-
-### rename
-
-Rename a file or directory.
-
-Parameters:
-- file_id (string, required): ID of file or directory to rename
-- new_name (string, required): New name for the file or directory
-
-### move
-
-Move files or directories to another directory.
-
-Parameters:
-- dir_id (string, required): Target directory ID
-- file_ids ([]string, required): IDs of files or directories to move
-
-### copy
-
-Copy files or directories to another directory.
-
-Parameters:
-- dir_id (string, required): Target directory ID
-- file_ids ([]string, required): IDs of files or directories to copy
-
-### stat
-
-Get detailed information about a file or directory.
-
-Parameters:
-- file_id (string, required): ID of file or directory to get info
-
-### listRecycleBin
-
-List items in the recycle bin.
-
-Parameters:
-- offset (string, optional): Offset for pagination, defaults to "0"
-- limit (string, optional): Number of items to return, defaults to "40"
-
-### revertRecycleBin
-
-Revert items from the recycle bin.
-
-Parameters:
-- item_ids ([]string, required): IDs of items to revert
-
-### cleanRecycleBin
-
-Clean items from the recycle bin.
-
-Parameters:
-- password (string, required): Password for cleaning recycle bin
-- item_ids ([]string, required): IDs of items to clean
-
-### getShareSnap
-
-Gets shared files and directories snapshot information.
-
-Parameters:
-- share_code (string, required): Share code
-- receive_code (string, required): Receive code
-- dir_id (string, optional): Directory ID to list, defaults to root directory
-- offset (int, optional): Offset for pagination, defaults to 0
-- limit (int, optional): Number of items to return, defaults to 20
+```json
+{
+  "jsonrpc": "2.0",
+  "id": "2",
+  "result": {
+    "content": [
+      {
+        "type": "text",
+        "text": "{\"count\":5,\"files\":[{\"file_id\":\"12345\",\"name\":\"report.pdf\",\"size\":1024,\"is_directory\":false},{\"file_id\":\"12346\",\"name\":\"annual-report.docx\",\"size\":2048,\"is_directory\":false}],\"offset\":0,\"page_size\":10}"
+      }
+    ]
+  }
+}
+```
 
 ## Notes
 
