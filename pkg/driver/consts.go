@@ -1,7 +1,8 @@
 package driver
 
 const (
-	UADefalut    = "Mozilla/5.0"
+	UADefault    = "Mozilla/5.0"
+	UADefalut    = "Mozilla/5.0" // typo of UADefault, for backward compatibility
 	UA115Browser = "Mozilla/5.0 115Browser/27.0.5.7"
 	UA115Disk    = "Mozilla/5.0 115disk/30.1.0"
 	UA115Desktop = "Mozilla/5.0 115Desktop/2.0.3.6"
