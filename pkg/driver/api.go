@@ -26,6 +26,7 @@ const (
 
 	ApiFileStat = "https://webapi.115.com/category/get"
 	ApiFileInfo = "https://webapi.115.com/files/get_info"
+	ApiFileSearch = "https://webapi.115.com/files/search"
 
 	// share
 	ApiShareSnap = "https://webapi.115.com/share/snap"
