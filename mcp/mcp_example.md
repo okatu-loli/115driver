@@ -58,22 +58,12 @@ The server will listen on stdin/stdout for MCP requests.
    - Parameters:
      - `file_id` (string): ID of file or directory to get info
 
-### Share Tools
-
-1. `getShareSnap`: Get shared files and directories snapshot information
-   - Parameters:
-     - `share_code` (string): Share code
-     - `receive_code` (string): Receive code
-     - `dir_id` (string): Directory ID to list, default is root directory
-     - `offset` (int): Offset for pagination, default is 0
-     - `limit` (int): Number of items to return, default is 20
-
 ### Recycle Bin Tools
 
 1. `listRecycleBin`: List items in the recycle bin
    - Parameters:
-     - `offset` (string): Offset for pagination, default is "0"
-     - `limit` (string): Number of items to return, default is "40"
+     - `offset` (string): Offset for pagination, default is 0
+     - `limit` (string): Number of items to return, default is 40
 
 2. `revertRecycleBin`: Revert items from the recycle bin
    - Parameters:
@@ -83,6 +73,14 @@ The server will listen on stdin/stdout for MCP requests.
    - Parameters:
      - `password` (string): Password for cleaning recycle bin
      - `item_ids` (array of strings): IDs of items to clean
+
+### Share Tools
+
+1. `getShareSnap`: Get shared files and directories snapshot information
+   - Parameters:
+     - `share_code` (string): Share code
+     - `receive_code` (string): Receive code
+     - `dir_id` (string): Directory ID to list, default is root directory
 
 ### Search Tools
 
@@ -94,6 +92,26 @@ The server will listen on stdin/stdout for MCP requests.
      - `type` (int): File type filter, 0:all 1:folder 2:document 3:image 4:video 5:audio 6:archive
      - `order` (string): Sort field, e.g. file_name, user_ptime
      - `asc` (int): Ascending order, 0:descending 1:ascending
+
+### Offline Download Tools
+
+1. `listOfflineTasks`: List offline download tasks
+   - Parameters:
+     - `page` (int64): Page number for pagination, default is 1
+
+2. `addOfflineTaskURIs`: Add offline tasks by download URIs, supports http, ed2k, magnet
+   - Parameters:
+     - `uris` (array of strings): Download URIs, supports http, ed2k, magnet
+     - `save_dir_id` (string): Directory ID to save downloaded files
+
+3. `deleteOfflineTasks`: Delete offline tasks
+   - Parameters:
+     - `hashes` (array of strings): Task hashes to delete
+     - `delete_files` (bool): Whether to delete associated files, default is false
+
+4. `clearOfflineTasks`: Clear offline tasks
+   - Parameters:
+     - `clear_flag` (int64): Clear flag, 0: clear completed tasks, 1: clear all tasks
 
 ## Example Request/Response
 

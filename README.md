@@ -51,7 +51,7 @@ func main() {
     }
     // or err := cr.FromCookie(cookieStr)
 
-    client := driver.Defalut().ImportCredential(cr)
+    client := driver.Default().ImportCredential(cr)
     if err := client.LoginCheck(); err != nil {
         log.Fatalf("login error: %s", err)
     }
