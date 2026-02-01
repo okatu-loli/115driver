@@ -104,6 +104,8 @@ type FileInfo struct {
 
 	CreateTime StringInt64 `json:"tp"`
 	UpdateTime string      `json:"t"`
+
+	ThumbURL string `json:"u"`
 }
 
 type LabelInfo struct {
