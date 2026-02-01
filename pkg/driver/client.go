@@ -34,7 +34,7 @@ func Default() *Pan115Client {
 	return New(UA())
 }
 
-// Defalut typo but for backward compatibility
+// Defalut is deprecated: use Default instead. This function exists for backward compatibility.
 func Defalut() *Pan115Client {
 	return Default()
 }

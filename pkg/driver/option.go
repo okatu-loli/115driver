@@ -162,7 +162,7 @@ type UploadMultipartOptions struct {
 	TokenRefreshTime time.Duration
 }
 
-// DefaultUploadMultipartOptions typo of DefaultUploadMultipartOptions, for backward compatibility
+// DefalutUploadMultipartOptions is deprecated: use DefaultUploadMultipartOptions instead. This function exists for backward compatibility.
 func DefalutUploadMultipartOptions() *UploadMultipartOptions {
 	return DefaultUploadMultipartOptions()
 }

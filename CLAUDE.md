@@ -109,10 +109,11 @@ client := driver.New(
 ### Known Typename (for backward compatibility)
 
 Note: The codebase contains intentional typos maintained for backward compatibility:
-- `Defalut()` function in `client.go` (should be `Default()`)
-- `UADefalut` constant in `consts.go` (should be `UA115Default`)
+- `Defalut()` function in `client.go` (should be `Default()`) - DEPRECATED: use `Default()` instead
+- `UADefalut` constant in `consts.go` (should be `UA115Default`) - DEPRECATED: use `UADefault` instead
+- `DefalutUploadMultipartOptions()` function in `option.go` (should be `DefaultUploadMultipartOptions()`) - DEPRECATED: use `DefaultUploadMultipartOptions()` instead
 
-These should NOT be corrected as they would break existing code.
+These functions are marked as deprecated and will be removed in a future version.
 
 ### MCP Server Details
 

@@ -122,6 +122,15 @@ if err := client.LoginCheck(); err != nil {
 
 ## Special Notes
 
+### Backward Compatibility
+
+Note: The codebase contains intentional typos maintained for backward compatibility:
+- `Defalut()` function in `client.go` (should be `Default()`) - DEPRECATED: use `Default()` instead
+- `UADefalut` constant in `consts.go` (should be `UA115Default`) - DEPRECATED: use `UADefault` instead
+- `DefalutUploadMultipartOptions()` function in `option.go` (should be `DefaultUploadMultipartOptions()`) - DEPRECATED: use `DefaultUploadMultipartOptions()` instead
+
+These functions are marked as deprecated and will be removed in a future version.
+
 ### Security Considerations
 - Credentials are stored as cookies and must be handled securely
 - Communication uses custom encryption protocols

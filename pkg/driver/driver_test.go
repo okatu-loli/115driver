@@ -197,6 +197,14 @@ func TestDownload(t *testing.T) {
 	assert.ErrorIs(t, err, ErrPickCodeIsEmpty)
 }
 
+func TestShareSnap(t *testing.T) {
+	down := teardown(t)
+	defer down(t)
+
+	_, err := client.GetShareSnapWithUA(UADefault, "sw6pw793wfp", "w816", "")
+	assert.ErrorIs(t, err, ErrSharedNotFound)
+}
+
 func TestDownloadByShareCode(t *testing.T) {
 	down := teardown(t)
 	defer down(t)
@@ -408,14 +416,6 @@ LOOP:
 			break LOOP
 		}
 	}
-}
-
-func TestShareSnap(t *testing.T) {
-	down := teardown(t)
-	defer down(t)
-
-	_, err := client.GetShareSnap("sw6pw793wfp", "w816", "")
-	assert.ErrorIs(t, err, ErrSharedNotFound)
 }
 
 func TestGetVersion(t *testing.T) {
