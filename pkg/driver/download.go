@@ -138,54 +138,44 @@ type SharedDownloadInfo struct {
 	FileName string      `json:"fn"`
 	FileSize StringInt64 `json:"fs"`
 	URL      struct {
-		URL    string      `json:"url"`
-		Client int         `json:"client"`
-		Desc   interface{} `json:"desc"`
-		Isp    interface{} `json:"isp"`
+		URL    string `json:"url"`
+		Client int    `json:"client"`
+		Desc   any    `json:"desc"`
+		Isp    any    `json:"isp"`
+		OSSID  string `json:"oss_id"`
+		OOID   string `json:"ooid"`
 	} `json:"url"`
 }
 
 // DownloadByShareCode get download info with share code
 func (c *Pan115Client) DownloadByShareCode(shareCode, receiveCode, fileID string) (*SharedDownloadInfo, error) {
-	key := crypto.GenerateKey()
+	return c.DownloadByShareCodeWithUA("", shareCode, receiveCode, fileID)
+}
 
-	result := DownloadResp{}
-	params, err := json.Marshal(map[string]string{
+func (c *Pan115Client) DownloadByShareCodeWithUA(ua, shareCode, receiveCode, fileID string) (*SharedDownloadInfo, error) {
+	result := DownloadShareResp{}
+	params := map[string]string{
 		"share_code":   shareCode,
 		"receive_code": receiveCode,
 		"file_id":      fileID,
-	})
-	if err != nil {
-		return nil, err
+		"dl":           "1",
 	}
 
-	data := crypto.Encode(params, key)
 	req := c.NewRequest().
-		SetQueryParam("t", Now().String()).
-		SetFormData(map[string]string{"data": data}).
+		SetQueryParams(params).
 		ForceContentType("application/json").
+		SetHeader("referer", BuildShareReferer(shareCode, receiveCode)).
 		SetResult(&result)
-	// if len(ua) > 0 {
-	// req = req.SetHeader("User-Agent", ua)
-	// }
-	resp, err := req.Post(ApiDownloadGetShareUrl)
+
+	if len(ua) > 0 {
+		req = req.SetHeader("User-Agent", ua)
+	}
+	resp, err := req.Get(ApiDownloadGetShareUrl)
 
 	if err := CheckErr(err, &result, resp); err != nil {
 		return nil, err
 	}
-	bytes, err := crypto.Decode(string(result.EncodedData), key)
-	if err != nil {
-		return nil, err
-	}
 
-	downloadInfo := SharedDownloadInfo{}
-	if err := json.Unmarshal(bytes, &downloadInfo); err != nil {
-		return nil, err
-	}
-
-	if downloadInfo.FileSize < 0 {
-		return nil, ErrDownloadEmpty
-	}
-
+	downloadInfo := result.Data
 	return &downloadInfo, nil
 }

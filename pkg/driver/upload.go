@@ -222,7 +222,7 @@ func (c *Pan115Client) RapidUpload(fileSize int64, fileName, dirID, preID, fileI
 	form.Set("target", target)
 	form.Set("sig", c.GenerateSignature(fileID, target))
 	form.Set("topupload", "true")
-	
+
 	signKey, signVal := "", ""
 	for retry := true; retry; {
 		t := NowMilli()
@@ -373,7 +373,7 @@ func (c *Pan115Client) UploadByMultipart(params *UploadOSSParams, fileSize int64
 		err       error
 	)
 
-	options := DefalutUploadMultipartOptions()
+	options := DefaultUploadMultipartOptions()
 	if len(opts) > 0 {
 		for _, f := range opts {
 			f(options)
