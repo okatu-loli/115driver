@@ -23,9 +23,6 @@ func QueryOffset(offset int) Query {
 
 // GetShareSnapWithUA get share snap info with user agent
 func (c *Pan115Client) GetShareSnapWithUA(ua, shareCode, receiveCode, dirID string, Queries ...Query) (*ShareSnapResp, error) {
-	if isCalledByAlistV3() {
-		return nil, ErrorNotSupportAlist
-	}
 	result := ShareSnapResp{}
 	query := map[string]string{
 		"share_code":   shareCode,
