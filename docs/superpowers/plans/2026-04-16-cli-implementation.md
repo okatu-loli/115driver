@@ -184,7 +184,10 @@ func ResolveCredential(cookieFlag, configPath, profile string) (*driver.Credenti
 	v := viper.New()
 	v.SetConfigFile(path)
 	if err := v.ReadInConfig(); err != nil {
-		return nil, fmt.Errorf("no credential found. Run '115driver login' to authenticate")
+		if _, ok := err.(*os.PathError); ok || os.IsNotExist(err) {
+			return nil, fmt.Errorf("no credential found. Run '115driver login' to authenticate")
+		}
+		return nil, fmt.Errorf("failed to read config: %w", err)
 	}
 
 	if profile == "" {
@@ -404,6 +407,7 @@ type JSONStat struct {
 	Name       string      `json:"name"`
 	Size       int64       `json:"size"`
 	IsDir      bool        `json:"is_dir"`
+	FileID     string      `json:"file_id"`
 	Sha1       string      `json:"sha1,omitempty"`
 	PickCode   string      `json:"pick_code,omitempty"`
 	CreateTime string      `json:"create_time"`
@@ -532,7 +536,7 @@ func (p *Printer) PrintStatTable(stat JSONStat) {
 	if stat.PickCode != "" {
 		fmt.Printf("  Pick:   %s\n", stat.PickCode)
 	}
-	fmt.Printf("  ID:     %s\n", stat.FileID) // Use parents[0].ID or from stat
+	fmt.Printf("  ID:     %s\n", stat.FileID)
 	fmt.Printf("  Created:  %s\n", stat.CreateTime)
 	fmt.Printf("  Modified: %s\n", stat.UpdateTime)
 	if stat.IsDir {
@@ -709,6 +713,7 @@ package cmd
 
 import (
 	"fmt"
+tt"context"
 	"time"
 
 	"github.com/SheltonZhu/115driver/cli/internal/auth"
@@ -778,8 +783,17 @@ func loginWithQRCode() error {
 		fmt.Printf("URL: https://qrcodeapi.115.com/api/1.0/mac/1.0/qrcode?uid=%s\n\n", session.UID)
 	}
 
-	// Poll for QR code status
+	// Poll for QR code status with context for graceful Ctrl+C
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Minute)
+	defer cancel()
+
 	for {
+		select {
+		case <-ctx.Done():
+			return &exitError{code: output.ExitError, msg: "QR code login timed out."}
+		default:
+		}
+
 		time.Sleep(3 * time.Second)
 		status, err := c.QRCodeStatus(session)
 		if err != nil {
@@ -995,6 +1009,7 @@ var statCmd = &cobra.Command{
 			Name:       statInfo.Name,
 			IsDir:      statInfo.IsDirectory,
 			Sha1:       statInfo.Sha1,
+				FileID:     fileID,
 			PickCode:   statInfo.PickCode,
 			CreateTime: statInfo.CreateTime.Format("2006-01-02 15:04:05"),
 			UpdateTime: statInfo.UpdateTime.Format("2006-01-02 15:04:05"),
@@ -1101,62 +1116,6 @@ var mkdirCmd = &cobra.Command{
 	},
 }
 
-func mkdirP(parentPath, dirName, fullPath string) error {
-	// Walk the path creating each segment if needed
-	parts := strings.Split(strings.Trim(parentPath+"/"+dirName, "/"), "/")
-	currentID := resolver.RootID
-	createdPath := ""
-
-	for i, part := range parts {
-		if part == "" {
-			continue
-		}
-		createdPath += "/" + part
-
-		// Try to resolve existing path first
-		existingID, err := resolver.ResolveDir(client, createdPath)
-		if err == nil && existingID != "" {
-			currentID = existingID
-			continue
-		}
-
-		// Create this segment
-		newID, err := client.Mkdir(currentID, part)
-		if err != nil {
-			// Check if it already exists (race condition)
-			if isExistErr(err) {
-				existingID, _ := resolver.ResolveDir(client, createdPath)
-				if existingID != "" {
-					currentID = existingID
-					continue
-				}
-			}
-			return &exitError{code: output.ExitError, msg: err.Error()}
-		}
-		currentID = newID
-	}
-
-	// currentID is the final created directory
-	_ = i // suppress unused var
-	printer.PrintSuccess(map[string]interface{}{
-		"name":   dirName,
-		"dir_id": currentID,
-		"path":   fullPath,
-	})
-	if !jsonOutput {
-		fmt.Printf("Created directory: %s (ID: %s)\n", fullPath, currentID)
-	}
-	return nil
-}
-
-func isExistErr(err error) bool {
-	return err == driver.ErrExist
-}
-
-var _ = isExistErr // used in mkdirP
-```
-
-Wait — there's a compilation issue with `i` variable. Let me fix that:
 
 ```go
 func mkdirP(parentPath, dirName, fullPath string) error {
@@ -1231,6 +1190,7 @@ package cmd
 
 import (
 	"fmt"
+	"path"
 
 	"github.com/SheltonZhu/115driver/cli/internal/output"
 	"github.com/SheltonZhu/115driver/cli/internal/resolver"
@@ -1270,8 +1230,6 @@ func init() {
 	rootCmd.AddCommand(renameCmd)
 }
 ```
-
-Note: needs `"path"` import. Add it.
 
 - [ ] **Step 2: Create `cli/cmd/mv.go`**
 
