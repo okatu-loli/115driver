@@ -5,6 +5,7 @@ import (
 
 	"github.com/SheltonZhu/115driver/cli/internal/output"
 	"github.com/SheltonZhu/115driver/cli/internal/resolver"
+	"github.com/SheltonZhu/115driver/pkg/driver"
 	"github.com/spf13/cobra"
 )
 
@@ -52,13 +53,23 @@ var offlineListCmd = &cobra.Command{
 	Use:   "list",
 	Short: "List offline download tasks",
 	RunE: func(cmd *cobra.Command, args []string) error {
-		result, err := client.ListOfflineTask(1)
-		if err != nil {
-			return &exitError{code: output.ExitError, msg: err.Error()}
+		var allTasks []*driver.OfflineTask
+		var total int64
+
+		for page := int64(1); ; page++ {
+			result, err := client.ListOfflineTask(page)
+			if err != nil {
+				return &exitError{code: output.ExitError, msg: err.Error()}
+			}
+			allTasks = append(allTasks, result.Tasks...)
+			total = result.Total
+			if page >= result.PageCount {
+				break
+			}
 		}
 
-		tasks := make([]map[string]interface{}, 0, len(result.Tasks))
-		for _, t := range result.Tasks {
+		tasks := make([]map[string]interface{}, 0, len(allTasks))
+		for _, t := range allTasks {
 			tasks = append(tasks, map[string]interface{}{
 				"name":    t.Name,
 				"hash":    t.InfoHash,
@@ -70,11 +81,11 @@ var offlineListCmd = &cobra.Command{
 
 		if jsonOutput {
 			printer.PrintSuccess(map[string]interface{}{
-				"total": result.Total,
+				"total": total,
 				"tasks": tasks,
 			})
 		} else {
-			fmt.Printf("Offline tasks (%d total):\n\n", result.Total)
+			fmt.Printf("Offline tasks (%d total):\n\n", total)
 			printer.PrintOfflineTable(tasks)
 		}
 		return nil
