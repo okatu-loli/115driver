@@ -47,8 +47,12 @@ func ResolveCredential(cookieFlag, configPath, profile string) (*driver.Credenti
 
 	path := configPath
 	if path == "" {
-		home, _ := os.UserHomeDir()
-		path = filepath.Join(home, DefaultConfigDir, DefaultConfigFile)
+		if envPath := os.Getenv(EnvConfig); envPath != "" {
+			path = envPath
+		} else {
+			home, _ := os.UserHomeDir()
+			path = filepath.Join(home, DefaultConfigDir, DefaultConfigFile)
+		}
 	}
 
 	v := viper.New()
@@ -60,6 +64,11 @@ func ResolveCredential(cookieFlag, configPath, profile string) (*driver.Credenti
 		return nil, fmt.Errorf("failed to read config: %w", err)
 	}
 
+	if profile == "" {
+		if envProfile := os.Getenv(EnvProfile); envProfile != "" {
+			profile = envProfile
+		}
+	}
 	if profile == "" {
 		profile = v.GetString("default_profile")
 		if profile == "" {

@@ -3,6 +3,7 @@ package cmd
 import (
 	"context"
 	"fmt"
+	"os"
 	"time"
 
 	"github.com/SheltonZhu/115driver/cli/internal/auth"
@@ -62,10 +63,10 @@ func loginWithQRCode() error {
 	}
 
 	if jsonOutput {
-		fmt.Printf(`{"success":true,"data":{"qr_url":"https://qrcodeapi.115.com/api/1.0/mac/1.0/qrcode?uid=%s","message":"Scan QR code with 115 app"}}`+"\n", session.UID)
+		fmt.Fprintf(os.Stderr, `{"qr_url":"https://qrcodeapi.115.com/api/1.0/mac/1.0/qrcode?uid=%s","message":"Scan QR code with 115 app"}`+"\n", session.UID)
 	} else {
-		fmt.Println("Scan the QR code with 115 app to login:")
-		fmt.Printf("URL: https://qrcodeapi.115.com/api/1.0/mac/1.0/qrcode?uid=%s\n\n", session.UID)
+		fmt.Fprintln(os.Stderr, "Scan the QR code with 115 app to login:")
+		fmt.Fprintf(os.Stderr, "URL: https://qrcodeapi.115.com/api/1.0/mac/1.0/qrcode?uid=%s\n\n", session.UID)
 	}
 
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Minute)
@@ -112,7 +113,7 @@ func loginWithQRCode() error {
 			return nil
 		}
 		if !jsonOutput {
-			fmt.Print(".")
+			fmt.Fprint(os.Stderr, ".")
 		}
 	}
 }

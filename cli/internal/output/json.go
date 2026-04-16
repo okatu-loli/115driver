@@ -2,6 +2,8 @@ package output
 
 import (
 	"time"
+
+	"github.com/SheltonZhu/115driver/pkg/driver"
 )
 
 type JSONFile struct {
@@ -21,13 +23,18 @@ func FileToJSON(f interface {
 	GetID() string
 	ModTime() time.Time
 }) JSONFile {
-	return JSONFile{
+	j := JSONFile{
 		Name:       f.GetName(),
 		Size:       f.GetSize(),
 		IsDir:      f.IsDir(),
 		UpdateTime: f.ModTime().Format(time.RFC3339),
 		FileID:     f.GetID(),
 	}
+	if df, ok := f.(*driver.File); ok {
+		j.PickCode = df.PickCode
+		j.Sha1 = df.Sha1
+	}
+	return j
 }
 
 type JSONStat struct {

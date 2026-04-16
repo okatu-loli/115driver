@@ -45,7 +45,7 @@ var rootCmd = &cobra.Command{
 		}
 		client = driver.New(opts...).ImportCredential(cr)
 
-		if err := client.LoginCheck(); err != nil {
+		if _, err := client.GetUser(); err != nil {
 			return &exitError{code: output.ExitAuth, msg: fmt.Sprintf("Authentication failed: %v\nRun '115driver login' to re-authenticate.", err)}
 		}
 		return nil
