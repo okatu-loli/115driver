@@ -243,8 +243,6 @@ package cmd
 
 import (
 	"fmt"
-	"os"
-
 	"github.com/SheltonZhu/115driver/cli/internal/auth"
 	"github.com/SheltonZhu/115driver/cli/internal/output"
 	"github.com/SheltonZhu/115driver/pkg/driver"
@@ -713,7 +711,7 @@ package cmd
 
 import (
 	"fmt"
-tt"context"
+	"context"
 	"time"
 
 	"github.com/SheltonZhu/115driver/cli/internal/auth"
@@ -1114,52 +1112,59 @@ var mkdirCmd = &cobra.Command{
 		}
 		return nil
 	},
-}
+	}
 
+	func mkdirP(parentPath, dirName, fullPath string) error {
+		parts := strings.Split(strings.Trim(parentPath+"/"+dirName, "/"), "/")
+		currentID := resolver.RootID
+		createdPath := ""
 
-```go
-func mkdirP(parentPath, dirName, fullPath string) error {
-	parts := strings.Split(strings.Trim(parentPath+"/"+dirName, "/"), "/")
-	currentID := resolver.RootID
-	createdPath := ""
-
-	for _, part := range parts {
-		if part == "" {
-			continue
-		}
-		createdPath += "/" + part
-
-		existingID, err := resolver.ResolveDir(client, createdPath)
-		if err == nil && existingID != "" {
-			currentID = existingID
-			continue
-		}
-
-		newID, err := client.Mkdir(currentID, part)
-		if err != nil {
-			if isExistErr(err) {
-				existingID, _ := resolver.ResolveDir(client, createdPath)
-				if existingID != "" {
-					currentID = existingID
-					continue
-				}
+		for _, part := range parts {
+			if part == "" {
+				continue
 			}
-			return &exitError{code: output.ExitError, msg: err.Error()}
+			createdPath += "/" + part
+
+			existingID, err := resolver.ResolveDir(client, createdPath)
+			if err == nil && existingID != "" {
+				currentID = existingID
+				continue
+			}
+
+			newID, err := client.Mkdir(currentID, part)
+			if err != nil {
+				if isExistErr(err) {
+					existingID, _ := resolver.ResolveDir(client, createdPath)
+					if existingID != "" {
+						currentID = existingID
+						continue
+					}
+				}
+				return &exitError{code: output.ExitError, msg: err.Error()}
+			}
+			currentID = newID
 		}
-		currentID = newID
+
+		printer.PrintSuccess(map[string]interface{}{
+			"name":   dirName,
+			"dir_id": currentID,
+			"path":   fullPath,
+		})
+		if !jsonOutput {
+			fmt.Printf("Created directory: %s (ID: %s)\n", fullPath, currentID)
+		}
+		return nil
 	}
 
-	printer.PrintSuccess(map[string]interface{}{
-		"name":   dirName,
-		"dir_id": currentID,
-		"path":   fullPath,
-	})
-	if !jsonOutput {
-		fmt.Printf("Created directory: %s (ID: %s)\n", fullPath, currentID)
+	func isExistErr(err error) bool {
+		return err == driver.ErrExist
 	}
-	return nil
-}
-```
+
+	func init() {
+		mkdirCmd.Flags().BoolVarP(&mkdirParents, "parents", "p", false, "Create parent directories as needed")
+		rootCmd.AddCommand(mkdirCmd)
+	}
+	```
 
 - [ ] **Step 2: Build and verify**
 
@@ -1670,7 +1675,6 @@ package cmd
 import (
 	"fmt"
 	"io"
-	"net/http"
 	"os"
 	"path/filepath"
 
