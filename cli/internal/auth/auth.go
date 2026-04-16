@@ -91,12 +91,16 @@ func ResolveCredential(cookieFlag, configPath, profile string) (*driver.Credenti
 func SaveCredential(configPath, profile, cookie string) error {
 	path := configPath
 	if path == "" {
-		home, _ := os.UserHomeDir()
-		dir := filepath.Join(home, DefaultConfigDir)
-		if err := os.MkdirAll(dir, 0700); err != nil {
-			return fmt.Errorf("create config dir: %w", err)
+		if envPath := os.Getenv(EnvConfig); envPath != "" {
+			path = envPath
+		} else {
+			home, _ := os.UserHomeDir()
+			dir := filepath.Join(home, DefaultConfigDir)
+			if err := os.MkdirAll(dir, 0700); err != nil {
+				return fmt.Errorf("create config dir: %w", err)
+			}
+			path = filepath.Join(dir, DefaultConfigFile)
 		}
-		path = filepath.Join(dir, DefaultConfigFile)
 	}
 
 	v := viper.New()
@@ -104,7 +108,11 @@ func SaveCredential(configPath, profile, cookie string) error {
 	_ = v.ReadInConfig()
 
 	if profile == "" {
-		profile = DefaultProfile
+		if envProfile := os.Getenv(EnvProfile); envProfile != "" {
+			profile = envProfile
+		} else {
+			profile = DefaultProfile
+		}
 	}
 
 	v.Set("default_profile", profile)
