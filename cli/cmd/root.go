@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"fmt"
+	"os"
 
 	"github.com/SheltonZhu/115driver/cli/internal/auth"
 	"github.com/SheltonZhu/115driver/cli/internal/output"
@@ -72,9 +73,17 @@ func init() {
 func Execute() int {
 	if err := rootCmd.Execute(); err != nil {
 		if ee, ok := err.(*exitError); ok {
-			return printer.PrintError(ee.msg, ee.code)
+			if printer != nil {
+				return printer.PrintError(ee.msg, ee.code)
+			}
+			fmt.Fprintln(os.Stderr, ee.msg)
+			return ee.code
 		}
-		return printer.PrintError(err.Error(), output.ExitError)
+		if printer != nil {
+			return printer.PrintError(err.Error(), output.ExitError)
+		}
+		fmt.Fprintln(os.Stderr, err.Error())
+		return output.ExitError
 	}
 	return output.ExitSuccess
 }

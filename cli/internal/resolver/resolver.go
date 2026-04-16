@@ -38,9 +38,15 @@ func ResolveFile(client *driver.Pan115Client, remotePath string) (string, error)
 	dir := path.Dir(cleaned)
 	fileName := path.Base(cleaned)
 
-	dirID, err := ResolveDir(client, "/"+dir)
-	if err != nil {
-		return "", err
+	var dirID string
+	if dir == "." || dir == "" {
+		dirID = RootID
+	} else {
+		var err error
+		dirID, err = ResolveDir(client, dir)
+		if err != nil {
+			return "", err
+		}
 	}
 
 	files, err := client.List(dirID)
