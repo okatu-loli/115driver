@@ -2,11 +2,9 @@ package output
 
 import (
 	"fmt"
-	"io"
 	"os"
 	"strings"
 	"text/tabwriter"
-	"time"
 )
 
 func FormatFileSize(size int64) string {
@@ -28,10 +26,6 @@ func FormatFileSize(size int64) string {
 	default:
 		return fmt.Sprintf("%d B", size)
 	}
-}
-
-func FormatTime(t time.Time) string {
-	return t.Format("2006-01-02 15:04")
 }
 
 func (p *Printer) PrintFileTable(path string, files []JSONFile) {
@@ -125,9 +119,3 @@ func (p *Printer) PrintOfflineTable(tasks []map[string]interface{}) {
 	}
 	w.Flush()
 }
-
-// ensure Printer satisfies io.Writer usage check
-var _ = io.EOF
-
-// suppress unused import
-var _ = FormatTime

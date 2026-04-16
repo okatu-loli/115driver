@@ -57,32 +57,24 @@ var offlineListCmd = &cobra.Command{
 			return &exitError{code: output.ExitError, msg: err.Error()}
 		}
 
+		tasks := make([]map[string]interface{}, 0, len(result.Tasks))
+		for _, t := range result.Tasks {
+			tasks = append(tasks, map[string]interface{}{
+				"name":    t.Name,
+				"hash":    t.InfoHash,
+				"status":  t.GetStatus(),
+				"percent": t.Percent,
+				"size":    t.Size,
+			})
+		}
+
 		if jsonOutput {
-			tasks := make([]map[string]interface{}, 0, len(result.Tasks))
-			for _, t := range result.Tasks {
-				tasks = append(tasks, map[string]interface{}{
-					"name":    t.Name,
-					"hash":    t.InfoHash,
-					"status":  t.GetStatus(),
-					"percent": t.Percent,
-					"size":    t.Size,
-				})
-			}
 			printer.PrintSuccess(map[string]interface{}{
 				"total": result.Total,
 				"tasks": tasks,
 			})
 		} else {
 			fmt.Printf("Offline tasks (%d total):\n\n", result.Total)
-			tasks := make([]map[string]interface{}, 0, len(result.Tasks))
-			for _, t := range result.Tasks {
-				tasks = append(tasks, map[string]interface{}{
-					"name":    t.Name,
-					"status":  t.GetStatus(),
-					"percent": t.Percent,
-					"size":    t.Size,
-				})
-			}
 			printer.PrintOfflineTable(tasks)
 		}
 		return nil

@@ -30,8 +30,6 @@ func init() {
 }
 
 func loginWithCookie() error {
-	p := output.NewPrinter(jsonOutput)
-
 	cr := &driver.Credential{}
 	if err := cr.FromCookie(loginCookie); err != nil {
 		return &exitError{code: output.ExitArgs, msg: fmt.Sprintf("Invalid cookie: %v", err)}
@@ -46,7 +44,7 @@ func loginWithCookie() error {
 		return &exitError{code: output.ExitError, msg: fmt.Sprintf("Failed to save config: %v", err)}
 	}
 
-	p.PrintSuccess(map[string]interface{}{
+	printer.PrintSuccess(map[string]interface{}{
 		"profile":      auth.DefaultProfile,
 		"cookie_saved": true,
 	})
@@ -57,8 +55,6 @@ func loginWithCookie() error {
 }
 
 func loginWithQRCode() error {
-	p := output.NewPrinter(jsonOutput)
-
 	c := driver.New(driver.UA(driver.UA115Browser))
 	session, err := c.QRCodeStart()
 	if err != nil {
@@ -106,7 +102,7 @@ func loginWithQRCode() error {
 			}
 
 			if jsonOutput {
-				p.PrintSuccess(map[string]interface{}{
+				printer.PrintSuccess(map[string]interface{}{
 					"profile":      auth.DefaultProfile,
 					"cookie_saved": true,
 				})
