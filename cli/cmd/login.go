@@ -63,7 +63,11 @@ func loginWithQRCode() error {
 	}
 
 	if jsonOutput {
-		fmt.Fprintf(os.Stderr, `{"qr_url":"https://qrcodeapi.115.com/api/1.0/mac/1.0/qrcode?uid=%s","message":"Scan QR code with 115 app"}`+"\n", session.UID)
+		printer.PrintSuccess(map[string]interface{}{
+			"status":  "waiting",
+			"qr_url":  fmt.Sprintf("https://qrcodeapi.115.com/api/1.0/mac/1.0/qrcode?uid=%s", session.UID),
+			"message": "Scan QR code with 115 app",
+		})
 	} else {
 		fmt.Fprintln(os.Stderr, "Scan the QR code with 115 app to login:")
 		fmt.Fprintf(os.Stderr, "URL: https://qrcodeapi.115.com/api/1.0/mac/1.0/qrcode?uid=%s\n\n", session.UID)
@@ -104,6 +108,7 @@ func loginWithQRCode() error {
 
 			if jsonOutput {
 				printer.PrintSuccess(map[string]interface{}{
+					"status":       "success",
 					"profile":      auth.DefaultProfile,
 					"cookie_saved": true,
 				})
