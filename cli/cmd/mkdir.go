@@ -21,6 +21,9 @@ var mkdirCmd = &cobra.Command{
 		remotePath := strings.TrimSuffix(args[0], "/")
 		dirName := path.Base(remotePath)
 		parentPath := path.Dir(remotePath)
+		if parentPath == "." {
+			parentPath = "/"
+		}
 
 		if mkdirParents {
 			return mkdirP(parentPath, dirName, remotePath)
