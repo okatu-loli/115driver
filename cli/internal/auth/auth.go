@@ -115,12 +115,19 @@ func SaveCredential(configPath, profile, cookie string) error {
 
 	v := viper.New()
 	v.SetConfigFile(path)
-	_ = v.ReadInConfig()
+	if err := v.ReadInConfig(); err != nil {
+		if !os.IsNotExist(err) {
+			return fmt.Errorf("failed to read config: %w", err)
+		}
+	}
 
 	profile = ResolveProfile(profile)
 
 	v.Set("default_profile", profile)
 	v.Set("profiles."+profile+".cookie", cookie)
 
-	return v.WriteConfig()
+	if err := v.WriteConfig(); err != nil {
+		return fmt.Errorf("failed to write config: %w", err)
+	}
+	return os.Chmod(path, 0600)
 }
