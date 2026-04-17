@@ -74,9 +74,9 @@ func ResolvePath(client *driver.Pan115Client, remotePath string) (string, bool, 
 	}
 
 	// Try as file
-	fileID, err := ResolveFile(client, remotePath)
-	if err != nil {
-		return "", false, fmt.Errorf("path not found: %s", remotePath)
+	fileID, fileErr := ResolveFile(client, remotePath)
+	if fileErr != nil {
+		return "", false, fmt.Errorf("%w; also tried as directory: %v", fileErr, err)
 	}
 	return fileID, false, nil
 }

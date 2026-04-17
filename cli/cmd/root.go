@@ -30,8 +30,8 @@ var rootCmd = &cobra.Command{
 	PersistentPreRunE: func(cmd *cobra.Command, args []string) error {
 		printer = output.NewPrinter(jsonOutput)
 
-		switch cmd.Name() {
-		case "login", "help", "completion":
+		name := cmd.Name()
+		if name == "login" || name == "help" || name == "completion" || (cmd.Parent() != nil && cmd.Parent().Name() == "completion") {
 			return nil
 		}
 

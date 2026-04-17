@@ -3,6 +3,7 @@ package cmd
 import (
 	"fmt"
 	"io"
+	"net/http"
 	"os"
 	"path/filepath"
 
@@ -65,9 +66,24 @@ func downloadFile(dlInfo *driver.DownloadInfo, localPath string) error {
 		return err
 	}
 
-	reader, err := dlInfo.Get()
+	req, err := http.NewRequest("GET", dlInfo.Url.Url, nil)
 	if err != nil {
-		return fmt.Errorf("get download stream: %w", err)
+		return fmt.Errorf("create request: %w", err)
+	}
+	for k, vals := range dlInfo.Header {
+		for _, v := range vals {
+			req.Header.Add(k, v)
+		}
+	}
+
+	resp, err := http.DefaultClient.Do(req)
+	if err != nil {
+		return fmt.Errorf("download request: %w", err)
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		return fmt.Errorf("download failed: HTTP %d", resp.StatusCode)
 	}
 
 	out, err := os.Create(localPath)
@@ -76,7 +92,7 @@ func downloadFile(dlInfo *driver.DownloadInfo, localPath string) error {
 	}
 	defer out.Close()
 
-	_, err = io.Copy(out, reader)
+	_, err = io.Copy(out, resp.Body)
 	return err
 }
 
