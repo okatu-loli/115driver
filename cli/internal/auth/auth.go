@@ -20,7 +20,7 @@ const (
 )
 
 type Config struct {
-	DefaultProfile string            `mapstructure:"default_profile"`
+	DefaultProfile string             `mapstructure:"default_profile"`
 	Profiles       map[string]Profile `mapstructure:"profiles"`
 }
 
@@ -71,9 +71,9 @@ func ResolveCredential(cookieFlag, configPath, profile string) (*driver.Credenti
 	}
 	if profile == "" {
 		profile = v.GetString("default_profile")
-		if profile == "" {
-			profile = DefaultProfile
-		}
+	}
+	if profile == "" {
+		profile = DefaultProfile
 	}
 
 	cookieStr := v.GetString("profiles." + profile + ".cookie")
@@ -88,6 +88,16 @@ func ResolveCredential(cookieFlag, configPath, profile string) (*driver.Credenti
 	return cr, nil
 }
 
+func ResolveProfile(profile string) string {
+	if profile != "" {
+		return profile
+	}
+	if envProfile := os.Getenv(EnvProfile); envProfile != "" {
+		return envProfile
+	}
+	return DefaultProfile
+}
+
 func SaveCredential(configPath, profile, cookie string) error {
 	path := configPath
 	if path == "" {
@@ -95,25 +105,19 @@ func SaveCredential(configPath, profile, cookie string) error {
 			path = envPath
 		} else {
 			home, _ := os.UserHomeDir()
-			dir := filepath.Join(home, DefaultConfigDir)
-			if err := os.MkdirAll(dir, 0700); err != nil {
-				return fmt.Errorf("create config dir: %w", err)
-			}
-			path = filepath.Join(dir, DefaultConfigFile)
+			path = filepath.Join(home, DefaultConfigDir, DefaultConfigFile)
 		}
+	}
+
+	if err := os.MkdirAll(filepath.Dir(path), 0700); err != nil {
+		return fmt.Errorf("create config dir: %w", err)
 	}
 
 	v := viper.New()
 	v.SetConfigFile(path)
 	_ = v.ReadInConfig()
 
-	if profile == "" {
-		if envProfile := os.Getenv(EnvProfile); envProfile != "" {
-			profile = envProfile
-		} else {
-			profile = DefaultProfile
-		}
-	}
+	profile = ResolveProfile(profile)
 
 	v.Set("default_profile", profile)
 	v.Set("profiles."+profile+".cookie", cookie)

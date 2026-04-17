@@ -45,8 +45,9 @@ func loginWithCookie() error {
 		return &exitError{code: output.ExitError, msg: fmt.Sprintf("Failed to save config: %v", err)}
 	}
 
+	resolvedProfile := auth.ResolveProfile(profile)
 	printer.PrintSuccess(map[string]interface{}{
-		"profile":      auth.DefaultProfile,
+		"profile":      resolvedProfile,
 		"cookie_saved": true,
 	})
 	if !jsonOutput {
@@ -109,7 +110,7 @@ func loginWithQRCode() error {
 			if jsonOutput {
 				printer.PrintSuccess(map[string]interface{}{
 					"status":       "success",
-					"profile":      auth.DefaultProfile,
+					"profile":      auth.ResolveProfile(profile),
 					"cookie_saved": true,
 				})
 			} else {
