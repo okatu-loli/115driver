@@ -63,15 +63,12 @@ func loginWithQRCode() error {
 		return &exitError{code: output.ExitError, msg: fmt.Sprintf("Failed to start QR login: %v", err)}
 	}
 
+	qrURL := fmt.Sprintf("https://qrcodeapi.115.com/api/1.0/mac/1.0/qrcode?uid=%s", session.UID)
 	if jsonOutput {
-		printer.PrintSuccess(map[string]interface{}{
-			"status":  "waiting",
-			"qr_url":  fmt.Sprintf("https://qrcodeapi.115.com/api/1.0/mac/1.0/qrcode?uid=%s", session.UID),
-			"message": "Scan QR code with 115 app",
-		})
+		fmt.Fprintf(os.Stderr, `{"qr_url":"%s","message":"Scan QR code with 115 app"}`+"\n", qrURL)
 	} else {
 		fmt.Fprintln(os.Stderr, "Scan the QR code with 115 app to login:")
-		fmt.Fprintf(os.Stderr, "URL: https://qrcodeapi.115.com/api/1.0/mac/1.0/qrcode?uid=%s\n\n", session.UID)
+		fmt.Fprintf(os.Stderr, "URL: %s\n\n", qrURL)
 	}
 
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Minute)
@@ -107,13 +104,11 @@ func loginWithQRCode() error {
 				return &exitError{code: output.ExitError, msg: fmt.Sprintf("Failed to save config: %v", err)}
 			}
 
-			if jsonOutput {
-				printer.PrintSuccess(map[string]interface{}{
-					"status":       "success",
-					"profile":      auth.ResolveProfile(profile),
-					"cookie_saved": true,
-				})
-			} else {
+			printer.PrintSuccess(map[string]interface{}{
+				"profile":      auth.ResolveProfile(profile),
+				"cookie_saved": true,
+			})
+			if !jsonOutput {
 				fmt.Println("\nLogin successful. Cookie saved to config.")
 			}
 			return nil

@@ -37,9 +37,10 @@ var statCmd = &cobra.Command{
 
 		if !statInfo.IsDirectory {
 			f, err := client.GetFile(fileID)
-			if err == nil {
-				jsonStat.Size = f.Size
+			if err != nil {
+				return &exitError{code: output.ExitError, msg: "Failed to get file details: " + err.Error()}
 			}
+			jsonStat.Size = f.Size
 		}
 
 		for _, p := range statInfo.Parents {
