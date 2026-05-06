@@ -246,12 +246,12 @@ go build -o 115driver-mcp-server ./mcp/
 
 | Category | Tools |
 |----------|-------|
-| **Directory** | `list_directory` |
+| **Directory** | `listDirectory` |
 | **File** | `stat`, `mkdir`, `delete`, `rename`, `move`, `copy`, `upload_from_url`, `upload_from_local`, `download_file`, `get_download_info` |
 | **Search** | `search` |
-| **Offline** | `list_offline_tasks`, `add_offline_task_uris`, `delete_offline_tasks`, `clear_offline_tasks` |
-| **Share** | `get_share_snap` |
-| **Recycle** | `list_recycle_bin`, `revert_recycle_bin`, `clean_recycle_bin` |
+| **Offline** | `listOfflineTasks`, `addOfflineTaskURIs`, `deleteOfflineTasks`, `clearOfflineTasks` |
+| **Share** | `getShareSnap` |
+| **Recycle** | `listRecycleBin`, `revertRecycleBin`, `cleanRecycleBin` |
 
 ### Configure with Claude Desktop
 
