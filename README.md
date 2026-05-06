@@ -232,13 +232,27 @@ echo 'source <(115driver completion zsh)' >> ~/.zshrc
 
 ### Install
 
+**Option 1: go install**
+
 ```bash
+go install github.com/SheltonZhu/115driver/mcp@latest
+```
+
+**Option 2: build from source**
+
+```bash
+git clone https://github.com/SheltonZhu/115driver.git
+cd 115driver
 go build -o 115driver-mcp-server ./mcp/
 ```
 
 ### Usage
 
 ```bash
+# If installed via go install:
+mcp --cookie="UID=xxx;CID=xxx;SEID=xxx;KID=xxx"
+
+# If built from source:
 ./115driver-mcp-server --cookie="UID=xxx;CID=xxx;SEID=xxx;KID=xxx"
 ```
 
@@ -261,7 +275,7 @@ Add to your `claude_desktop_config.json`:
 {
   "mcpServers": {
     "115driver": {
-      "command": "/path/to/115driver-mcp-server",
+      "command": "mcp",
       "args": ["--cookie=UID=xxx;CID=xxx;SEID=xxx;KID=xxx"]
     }
   }
