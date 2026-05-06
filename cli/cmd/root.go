@@ -3,6 +3,7 @@ package cmd
 import (
 	"fmt"
 	"os"
+	"strings"
 
 	"github.com/SheltonZhu/115driver/cli/internal/auth"
 	"github.com/SheltonZhu/115driver/cli/internal/output"
@@ -86,7 +87,7 @@ func Execute() int {
 	// Pre-scan os.Args for --json so printer is initialized correctly
 	// even when flag parsing fails early (unknown command, etc.)
 	for _, arg := range os.Args[1:] {
-		if arg == "--json" {
+		if arg == "--json" || strings.HasPrefix(arg, "--json=") {
 			jsonOutput = true
 			break
 		}
