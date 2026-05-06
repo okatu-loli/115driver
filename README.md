@@ -63,7 +63,7 @@ func main() {
     }
 
     // Or create manually
-    cr := &driver.Credential{
+    cr = &driver.Credential{
         UID:  "your_uid",
         CID:  "your_cid",
         SEID: "your_seid",
