@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"fmt"
+	"os"
 
 	"github.com/SheltonZhu/115driver/cli/internal/auth"
 	"github.com/SheltonZhu/115driver/cli/internal/output"
@@ -75,7 +76,14 @@ func init() {
 }
 
 func Execute() int {
-	// Initialize printer early so errors during flag parse are also JSON-formatted
+	// Pre-scan os.Args for --json so printer is initialized correctly
+	// even when flag parsing fails early (unknown command, etc.)
+	for _, arg := range os.Args[1:] {
+		if arg == "--json" {
+			jsonOutput = true
+			break
+		}
+	}
 	if printer == nil {
 		printer = output.NewPrinter(jsonOutput)
 	}
