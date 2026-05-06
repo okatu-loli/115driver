@@ -64,12 +64,8 @@ func loginWithQRCode() error {
 	}
 
 	qrURL := fmt.Sprintf("https://qrcodeapi.115.com/api/1.0/mac/1.0/qrcode?uid=%s", session.UID)
-	if jsonOutput {
-		fmt.Fprintf(os.Stderr, `{"qr_url":"%s","message":"Scan QR code with 115 app"}`+"\n", qrURL)
-	} else {
-		fmt.Fprintln(os.Stderr, "Scan the QR code with 115 app to login:")
-		fmt.Fprintf(os.Stderr, "URL: %s\n\n", qrURL)
-	}
+	fmt.Fprintln(os.Stderr, "Scan the QR code with 115 app to login:")
+	fmt.Fprintf(os.Stderr, "URL: %s\n\n", qrURL)
 
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Minute)
 	defer cancel()
