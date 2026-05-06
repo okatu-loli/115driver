@@ -351,10 +351,10 @@ Credentials are stored in `~/.115driver/config.toml` and support multiple profil
 ### Authentication Priority
 
 1. `--cookie` flag
-2. `115DRIVER_COOKIE` environment variable
+2. `DRIVER115_COOKIE` environment variable
 3. Config file (`~/.115driver/config.toml`)
 
-Additional env vars: `115DRIVER_CONFIG` (config path), `115DRIVER_PROFILE` (profile name).
+Additional env vars: `DRIVER115_CONFIG` (config path), `DRIVER115_PROFILE` (profile name).
 
 ### Commands
 

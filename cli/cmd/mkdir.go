@@ -18,7 +18,10 @@ var mkdirCmd = &cobra.Command{
 	Short: "Create a directory",
 	Args:  cobra.ExactArgs(1),
 	RunE: func(cmd *cobra.Command, args []string) error {
-		remotePath := strings.TrimSuffix(args[0], "/")
+		remotePath := strings.TrimRight(args[0], "/")
+		if remotePath == "" {
+			return &exitError{code: output.ExitArgs, msg: "Cannot create root directory."}
+		}
 		dirName := path.Base(remotePath)
 		parentPath := path.Dir(remotePath)
 		if parentPath == "." {

@@ -63,7 +63,7 @@ func (e *exitError) Error() string {
 }
 
 func init() {
-	rootCmd.PersistentFlags().StringVar(&cookieFlag, "cookie", "", "Cookie string (or set 115DRIVER_COOKIE env)")
+	rootCmd.PersistentFlags().StringVar(&cookieFlag, "cookie", "", "Cookie string (or set DRIVER115_COOKIE env)")
 	rootCmd.PersistentFlags().StringVar(&configPath, "config", "", "Config file path (default ~/.115driver/config.toml)")
 	rootCmd.PersistentFlags().StringVar(&profile, "profile", "", "Config profile name (default 'main')")
 	rootCmd.PersistentFlags().BoolVar(&jsonOutput, "json", false, "Output in JSON format (for AI agents)")

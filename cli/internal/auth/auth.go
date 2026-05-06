@@ -13,10 +13,10 @@ const (
 	DefaultConfigDir  = ".115driver"
 	DefaultConfigFile = "config.toml"
 	DefaultProfile    = "main"
-	EnvCookie         = "115DRIVER_COOKIE"
-	EnvConfig         = "115DRIVER_CONFIG"
-	EnvProfile        = "115DRIVER_PROFILE"
-	EnvDebug          = "115DRIVER_DEBUG"
+	EnvCookie         = "DRIVER115_COOKIE"
+	EnvConfig         = "DRIVER115_CONFIG"
+	EnvProfile        = "DRIVER115_PROFILE"
+	EnvDebug          = "DRIVER115_DEBUG"
 )
 
 type Config struct {
