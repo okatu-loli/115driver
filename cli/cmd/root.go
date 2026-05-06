@@ -2,7 +2,6 @@ package cmd
 
 import (
 	"fmt"
-	"os"
 
 	"github.com/SheltonZhu/115driver/cli/internal/auth"
 	"github.com/SheltonZhu/115driver/cli/internal/output"
@@ -76,19 +75,16 @@ func init() {
 }
 
 func Execute() int {
+	// Initialize printer early so errors during flag parse are also JSON-formatted
+	if printer == nil {
+		printer = output.NewPrinter(jsonOutput)
+	}
+
 	if err := rootCmd.Execute(); err != nil {
 		if ee, ok := err.(*exitError); ok {
-			if printer != nil {
-				return printer.PrintError(ee.msg, ee.code)
-			}
-			fmt.Fprintln(os.Stderr, ee.msg)
-			return ee.code
+			return printer.PrintError(ee.msg, ee.code)
 		}
-		if printer != nil {
-			return printer.PrintError(err.Error(), output.ExitError)
-		}
-		fmt.Fprintln(os.Stderr, err.Error())
-		return output.ExitError
+		return printer.PrintError(err.Error(), output.ExitError)
 	}
 	return output.ExitSuccess
 }

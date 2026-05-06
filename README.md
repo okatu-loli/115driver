@@ -401,6 +401,37 @@ All commands support `--json` for machine-readable output:
 115driver --json stat /path/to/file
 ```
 
+## MCP Server
+
+115driver includes an MCP (Model Context Protocol) server for AI application integration (Claude, Cursor, etc.).
+
+### Install
+
+```bash
+go build -o 115driver-mcp-server ./mcp/
+```
+
+### Usage
+
+```bash
+./115driver-mcp-server --cookie="UID=xxx;CID=xxx;SEID=xxx;KID=xxx"
+```
+
+### Configure with Claude Desktop
+
+Add to your `claude_desktop_config.json`:
+
+```json
+{
+  "mcpServers": {
+    "115driver": {
+      "command": "/path/to/115driver-mcp-server",
+      "args": ["--cookie=UID=xxx;CID=xxx;SEID=xxx;KID=xxx"]
+    }
+  }
+}
+```
+
 ## API Reference
 
 For detailed API documentation, visit [pkg.go.dev](https://pkg.go.dev/github.com/SheltonZhu/115driver).
@@ -433,6 +464,8 @@ The 115 API may have rate limits. If you encounter rate limiting errors:
 
 ```
 115driver/
+├── cmd/
+│   └── 115driver/       # CLI entry point (go install binary)
 ├── pkg/
 │   ├── driver/          # Core driver implementation
 │   │   ├── client.go    # Client interface
@@ -445,7 +478,7 @@ The 115 API may have rate limits. If you encounter rate limiting errors:
 │   │   ├── offline.go   # Offline download
 │   │   └── ...          # Other modules
 │   └── crypto/          # Cryptography utilities
-├── cli/                 # CLI tool implementation
+├── cli/                 # CLI implementation
 │   ├── cmd/             # Cobra commands
 │   └── internal/        # Internal packages (auth, output, resolver)
 └── mcp/                 # MCP server implementation
