@@ -35,11 +35,15 @@ var rootCmd = &cobra.Command{
 
 		name := cmd.Name()
 		switch name {
-		case "login", "help", "completion", "config", "__complete", "__completeNoDesc":
+		case "login", "help", "completion", "version", "config", "__complete", "__completeNoDesc":
 			return nil
 		}
-		if cmd.Parent() != nil && cmd.Parent().Name() == "completion" {
-			return nil
+		// Check parent for subcommands of config and completion
+		if parent := cmd.Parent(); parent != nil {
+			pname := parent.Name()
+			if pname == "config" || pname == "completion" {
+				return nil
+			}
 		}
 
 		cr, err := auth.ResolveCredential(cookieFlag, configPath, profile)

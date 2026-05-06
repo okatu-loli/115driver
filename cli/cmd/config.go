@@ -18,11 +18,23 @@ var configCmd = &cobra.Command{
 	Args:  cobra.NoArgs,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		path := resolveConfigPath()
-		currentProfile := auth.ResolveProfile(profile)
 
-		_, err := readConfig(path)
+		v, err := readConfig(path)
 		if err != nil {
 			return &exitError{code: output.ExitError, msg: err.Error()}
+		}
+
+		// Resolve profile: --profile flag > env > config default_profile > "main"
+		currentProfile := profile
+		if currentProfile == "" {
+			if envProfile := os.Getenv(auth.EnvProfile); envProfile != "" {
+				currentProfile = envProfile
+			} else {
+				currentProfile = v.GetString("default_profile")
+				if currentProfile == "" {
+					currentProfile = auth.DefaultProfile
+				}
+			}
 		}
 
 		if jsonOutput {
