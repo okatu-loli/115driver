@@ -330,7 +330,7 @@ func main() {
 ### Install
 
 ```bash
-go install github.com/SheltonZhu/115driver/cli@latest
+go install github.com/SheltonZhu/115driver/cmd/115driver@latest
 ```
 
 ### Authentication
