@@ -401,6 +401,19 @@ All commands support `--json` for machine-readable output:
 115driver --json stat /path/to/file
 ```
 
+### Shell Completion
+
+```bash
+# Bash
+echo 'source <(115driver completion bash)' >> ~/.bashrc
+
+# Zsh
+echo 'source <(115driver completion zsh)' >> ~/.zshrc
+
+# Fish
+115driver completion fish > ~/.config/fish/completions/115driver.fish
+```
+
 ## MCP Server
 
 115driver includes an MCP (Model Context Protocol) server for AI application integration (Claude, Cursor, etc.).
