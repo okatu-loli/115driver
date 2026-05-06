@@ -18,6 +18,9 @@ var (
 	debugMode  bool
 )
 
+// Set via -ldflags at build time
+var version = "dev"
+
 var client *driver.Pan115Client
 var printer *output.Printer
 
@@ -26,13 +29,13 @@ var rootCmd = &cobra.Command{
 	Short:         "CLI tool for 115 cloud storage",
 	SilenceErrors: true,
 	SilenceUsage:  true,
-	Version:       "0.1.0",
+	Version:       version,
 	PersistentPreRunE: func(cmd *cobra.Command, args []string) error {
 		printer = output.NewPrinter(jsonOutput)
 
 		name := cmd.Name()
 		switch name {
-		case "login", "help", "completion", "__complete", "__completeNoDesc":
+		case "login", "help", "completion", "config", "__complete", "__completeNoDesc":
 			return nil
 		}
 		if cmd.Parent() != nil && cmd.Parent().Name() == "completion" {
