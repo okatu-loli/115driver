@@ -31,7 +31,11 @@ var rootCmd = &cobra.Command{
 		printer = output.NewPrinter(jsonOutput)
 
 		name := cmd.Name()
-		if name == "login" || name == "help" || name == "completion" || (cmd.Parent() != nil && cmd.Parent().Name() == "completion") {
+		switch name {
+		case "login", "help", "completion", "__complete", "__completeNoDesc":
+			return nil
+		}
+		if cmd.Parent() != nil && cmd.Parent().Name() == "completion" {
 			return nil
 		}
 
