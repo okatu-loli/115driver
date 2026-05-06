@@ -56,19 +56,19 @@ import (
 )
 
 func main() {
-    // Create credentials from cookie string
+    // Option 1: Import credentials from cookie string
     cr, err := driver.CredentialFromCookie("your_cookie_string")
     if err != nil {
         log.Fatalf("Failed to create credential: %v", err)
     }
 
-    // Or create manually
-    cr = &driver.Credential{
-        UID:  "your_uid",
-        CID:  "your_cid",
-        SEID: "your_seid",
-        KID:  "your_kid",
-    }
+    // Option 2: Create credentials manually
+    // cr := &driver.Credential{
+    //     UID:  "your_uid",
+    //     CID:  "your_cid",
+    //     SEID: "your_seid",
+    //     KID:  "your_kid",
+    // }
 
     // Create client with credentials
     client := driver.Default().ImportCredential(cr)
@@ -308,10 +308,9 @@ The 115 API may have rate limits. If you encounter rate limiting errors:
 ├── pkg/
 │   ├── driver/               # Core driver (client, login, file, upload, download, search, share, offline)
 │   └── crypto/               # Cryptography utilities (ECDH, AES, RSA)
-├── mcp/                      # MCP server (stdin/stdout JSON-RPC 2.0)
-│   ├── main.go               # Entry point
-│   └── server/tools/         # Tool implementations (dir, file, search, offline, share, recycle)
-└── docs/                     # Documentation
+└── mcp/                      # MCP server (stdin/stdout JSON-RPC 2.0)
+    ├── main.go               # Entry point
+    └── server/tools/         # Tool implementations (dir, file, search, offline, share, recycle)
 ```
 
 ## Star History
