@@ -116,7 +116,7 @@ func SaveCredential(configPath, profile, cookie string) error {
 	v := viper.New()
 	v.SetConfigFile(path)
 	if err := v.ReadInConfig(); err != nil {
-		if !os.IsNotExist(err) {
+		if _, ok := err.(viper.ConfigFileNotFoundError); !ok && !os.IsNotExist(err) {
 			return fmt.Errorf("failed to read config: %w", err)
 		}
 	}
