@@ -14,12 +14,12 @@ import (
 )
 
 var downloadCmd = &cobra.Command{
-	Use:   "download <remote_path> <local_dir>",
-	Short: "Download a file from remote to local directory",
+	Use:   "download <remote_path> <local_path>",
+	Short: "Download a file from remote to a local directory or file path",
 	Args:  cobra.ExactArgs(2),
 	RunE: func(cmd *cobra.Command, args []string) error {
 		remotePath := args[0]
-		localDir := args[1]
+		localTarget := args[1]
 
 		fileID, _, err := resolver.ResolvePath(client, remotePath)
 		if err != nil {
@@ -39,7 +39,7 @@ var downloadCmd = &cobra.Command{
 			return &exitError{code: output.ExitError, msg: fmt.Sprintf("Failed to get download URL: %v", err)}
 		}
 
-		localPath := filepath.Join(localDir, dlInfo.FileName)
+		localPath := resolver.ResolveLocalDownloadPath(localTarget, dlInfo.FileName)
 
 		if !jsonOutput {
 			fmt.Printf("Downloading %s (%s)...\n", dlInfo.FileName, output.FormatFileSize(int64(dlInfo.FileSize)))
@@ -94,6 +94,10 @@ func downloadFile(dlInfo *driver.DownloadInfo, localPath string) error {
 
 	_, err = io.Copy(out, resp.Body)
 	return err
+}
+
+func resolveDownloadTargetPath(localTarget, fileName string) string {
+	return resolver.ResolveLocalDownloadPath(localTarget, fileName)
 }
 
 func init() {
