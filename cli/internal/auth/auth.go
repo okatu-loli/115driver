@@ -61,6 +61,9 @@ func ResolveCredential(cookieFlag, configPath, profile string) (*driver.Credenti
 		if os.IsNotExist(err) {
 			return nil, fmt.Errorf("no credential found. Run '115driver login' to authenticate")
 		}
+		if _, ok := err.(viper.ConfigFileNotFoundError); ok {
+			return nil, fmt.Errorf("no credential found. Run '115driver login' to authenticate")
+		}
 		return nil, fmt.Errorf("failed to read config: %w", err)
 	}
 
