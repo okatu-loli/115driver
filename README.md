@@ -323,6 +323,128 @@ func main() {
 }
 ```
 
+## CLI
+
+115driver includes a CLI tool for interacting with 115 cloud storage from the command line, designed for both human use (colored table output) and AI agent consumption (`--json` flag).
+
+### Install
+
+```bash
+go install github.com/SheltonZhu/115driver/cmd/115driver@latest
+```
+
+### Authentication
+
+```bash
+# QR code login (interactive)
+115driver login
+
+# Cookie login
+115driver login --cookie "UID=xxx;CID=xxx;SEID=xxx;KID=xxx"
+
+# Verify identity
+115driver whoami
+```
+
+Credentials are stored in `~/.115driver/config.toml` and support multiple profiles.
+
+### Authentication Priority
+
+1. `--cookie` flag
+2. `DRIVER115_COOKIE` environment variable
+3. Config file (`~/.115driver/config.toml`)
+
+Additional env vars: `DRIVER115_CONFIG` (config path), `DRIVER115_PROFILE` (profile name).
+
+### Commands
+
+```bash
+# List files
+115driver ls /path/to/dir
+115driver ls -l /path/to/dir          # detailed view
+
+# File info
+115driver stat /path/to/file
+
+# Create directories
+115driver mkdir /new/dir
+115driver mkdir -p /deep/nested/dir   # create parents
+
+# Move / Copy / Rename / Delete
+115driver mv /source/file /dest/dir
+115driver cp /source/file /dest/dir
+115driver rename /path/to/file new_name
+115driver rm /path/to/file
+
+# Upload & Download
+115driver upload /local/file /remote/dir
+115driver download /remote/file /local/dir
+
+# Search
+115driver search keyword
+115driver search keyword -t video     # filter by type
+115driver search keyword --sort size  # sort results
+
+# Offline downloads (HTTP/ED2K/magnet)
+115driver offline add <url>
+115driver offline add <url> -d /save/dir
+115driver offline list
+115driver offline rm <hash>
+```
+
+### JSON Output
+
+All commands support `--json` for machine-readable output:
+
+```bash
+115driver --json ls /path/to/dir
+115driver --json stat /path/to/file
+```
+
+### Shell Completion
+
+```bash
+# Bash
+echo 'source <(115driver completion bash)' >> ~/.bashrc
+
+# Zsh
+echo 'source <(115driver completion zsh)' >> ~/.zshrc
+
+# Fish
+115driver completion fish > ~/.config/fish/completions/115driver.fish
+```
+
+## MCP Server
+
+115driver includes an MCP (Model Context Protocol) server for AI application integration (Claude, Cursor, etc.).
+
+### Install
+
+```bash
+go build -o 115driver-mcp-server ./mcp/
+```
+
+### Usage
+
+```bash
+./115driver-mcp-server --cookie="UID=xxx;CID=xxx;SEID=xxx;KID=xxx"
+```
+
+### Configure with Claude Desktop
+
+Add to your `claude_desktop_config.json`:
+
+```json
+{
+  "mcpServers": {
+    "115driver": {
+      "command": "/path/to/115driver-mcp-server",
+      "args": ["--cookie=UID=xxx;CID=xxx;SEID=xxx;KID=xxx"]
+    }
+  }
+}
+```
+
 ## API Reference
 
 For detailed API documentation, visit [pkg.go.dev](https://pkg.go.dev/github.com/SheltonZhu/115driver).
@@ -355,6 +477,8 @@ The 115 API may have rate limits. If you encounter rate limiting errors:
 
 ```
 115driver/
+├── cmd/
+│   └── 115driver/       # CLI entry point (go install binary)
 ├── pkg/
 │   ├── driver/          # Core driver implementation
 │   │   ├── client.go    # Client interface
@@ -367,6 +491,9 @@ The 115 API may have rate limits. If you encounter rate limiting errors:
 │   │   ├── offline.go   # Offline download
 │   │   └── ...          # Other modules
 │   └── crypto/          # Cryptography utilities
+├── cli/                 # CLI implementation
+│   ├── cmd/             # Cobra commands
+│   └── internal/        # Internal packages (auth, output, resolver)
 └── mcp/                 # MCP server implementation
 ```
 
