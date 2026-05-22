@@ -3,6 +3,7 @@ package driver
 import (
 	"encoding/json"
 	"math/big"
+	"strconv"
 	"strings"
 )
 
@@ -113,6 +114,9 @@ func parseSpaceSize(b []byte) (int64, error) {
 		return 0, err
 	}
 	sizeInt, _ := size.Int(nil)
+	if !sizeInt.IsInt64() {
+		return 0, strconv.ErrRange
+	}
 	return sizeInt.Int64(), nil
 }
 
