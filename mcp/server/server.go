@@ -46,6 +46,10 @@ func (s *Server) Start(ctx context.Context) error {
 
 // registerTools registers all available tools with the MCP server
 func (s *Server) registerTools() {
+	// Register account tools
+	accountTools := tools.NewAccountTools(s.client)
+	accountTools.RegisterTools(s.mcpServer)
+
 	// Register directory tools
 	dirTools := tools.NewDirTools(s.client)
 	dirTools.RegisterTools(s.mcpServer)
