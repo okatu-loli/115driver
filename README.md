@@ -156,6 +156,9 @@ go install github.com/SheltonZhu/115driver/cmd/115driver@latest
 
 # Verify identity
 115driver whoami
+
+# Account and storage info
+115driver info
 ```
 
 Credentials are stored in `~/.115driver/config.toml` and support multiple profiles.
@@ -177,6 +180,9 @@ Additional env vars: `DRIVER115_CONFIG` (config path), `DRIVER115_PROFILE` (prof
 
 # File info
 115driver stat /path/to/file
+
+# Account and storage info
+115driver info
 
 # Create directories
 115driver mkdir /new/dir
@@ -211,6 +217,7 @@ All commands support `--json` for machine-readable output:
 ```bash
 115driver --json ls /path/to/dir
 115driver --json stat /path/to/file
+115driver --json info
 ```
 
 ### Shell Completion
@@ -260,6 +267,7 @@ mcp --cookie="UID=xxx;CID=xxx;SEID=xxx;KID=xxx"
 
 | Category | Tools |
 |----------|-------|
+| **Account** | `getAccountInfo` |
 | **Directory** | `listDirectory` |
 | **File** | `stat`, `mkdir`, `delete`, `rename`, `move`, `copy`, `upload_from_url`, `upload_from_local`, `download_file`, `get_download_info` |
 | **Search** | `search` |
@@ -319,12 +327,13 @@ The 115 API may have rate limits. If you encounter rate limiting errors:
 ├── cli/                      # CLI implementation
 │   ├── cmd/                  # Cobra commands
 │   └── internal/             # Internal packages (auth, output, resolver)
+├── internal/                 # Shared app-level helpers
 ├── pkg/
 │   ├── driver/               # Core driver (client, login, file, upload, download, search, share, offline)
 │   └── crypto/               # Cryptography utilities (ECDH, AES, RSA)
 └── mcp/                      # MCP server (stdin/stdout JSON-RPC 2.0)
     ├── main.go               # Entry point
-    └── server/tools/         # Tool implementations (dir, file, search, offline, share, recycle)
+    └── server/tools/         # Tool implementations (account, dir, file, search, offline, share, recycle)
 ```
 
 ## Star History
