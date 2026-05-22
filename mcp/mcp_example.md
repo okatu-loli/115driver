@@ -20,6 +20,12 @@ The server will listen on stdin/stdout for MCP requests.
 
 ## Available Tools
 
+### Account Tools
+
+1. `getAccountInfo`: Get current account, storage space, and login device info
+   - Parameters: none
+   - Returns: `user`, `space.total`, `space.remain`, `space.used`, `login_devices`, and `imei_info`
+
 ### Directory Tools
 
 1. `listDirectory`: List files and directories in a specific directory
