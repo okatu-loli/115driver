@@ -2,7 +2,7 @@ package driver
 
 import (
 	"encoding/json"
-	"strconv"
+	"math/big"
 	"strings"
 )
 
@@ -105,10 +105,15 @@ func parseSpaceSize(b []byte) (int64, error) {
 		value = string(b)
 	}
 	value = strings.TrimSpace(value)
-	if dot := strings.IndexByte(value, '.'); dot >= 0 {
-		value = value[:dot]
+	if value == "" {
+		return 0, nil
 	}
-	return strconv.ParseInt(value, 10, 64)
+	size, _, err := big.ParseFloat(value, 10, 256, big.ToZero)
+	if err != nil {
+		return 0, err
+	}
+	sizeInt, _ := size.Int(nil)
+	return sizeInt.Int64(), nil
 }
 
 type SpaceInfo struct {
