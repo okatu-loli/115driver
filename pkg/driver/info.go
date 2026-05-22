@@ -114,6 +114,9 @@ func parseSpaceSize(b []byte) (int64, error) {
 		return 0, err
 	}
 	sizeInt, _ := size.Int(nil)
+	if sizeInt == nil {
+		return 0, strconv.ErrRange
+	}
 	if !sizeInt.IsInt64() {
 		return 0, strconv.ErrRange
 	}

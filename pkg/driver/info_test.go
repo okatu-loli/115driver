@@ -70,3 +70,21 @@ func TestInfoResponseRejectsOutOfRangeSpaceSizes(t *testing.T) {
 	require.Error(t, err)
 	assert.ErrorIs(t, err, strconv.ErrRange)
 }
+
+func TestInfoResponseRejectsInfiniteSpaceSizes(t *testing.T) {
+	const payload = `{
+		"state": true,
+		"data": {
+			"space_info": {
+				"all_total": {"size": "Inf", "size_format": "Inf"},
+				"all_remain": {"size": 0, "size_format": "0B"},
+				"all_use": {"size": 42, "size_format": "42B"}
+			},
+			"login_devices_info": {},
+			"imei_info": false
+		}
+	}`
+
+	var resp InfoResponse
+	require.Error(t, json.Unmarshal([]byte(payload), &resp))
+}
