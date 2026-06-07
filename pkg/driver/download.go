@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"io"
 	"net/http"
+	"strings"
 
 	crypto "github.com/SheltonZhu/115driver/pkg/crypto/m115"
 	"github.com/go-resty/resty/v2"
@@ -75,7 +76,7 @@ func (c *Pan115Client) DownloadWithUA(pickCode, ua string) (*DownloadInfo, error
 		if info.FileSize < 0 {
 			return nil, ErrDownloadEmpty
 		}
-		info.Header = resp.Request.Header
+		info.Header = buildDownloadHeaders(resp.Request.Header, resp.Cookies())
 		return info, nil
 	}
 	return nil, ErrUnexpected
@@ -122,7 +123,7 @@ func (c *Pan115Client) DownloadWithUAByAndroidAPI(pickCode string, ua string) (*
 			Url: infoResp.URL,
 		},
 		PickCode: pickCode,
-		Header:   resp.Request.Header,
+		Header:   buildDownloadHeaders(resp.Request.Header, resp.Cookies()),
 	}
 
 	return &info, nil
@@ -131,6 +132,28 @@ func (c *Pan115Client) DownloadWithUAByAndroidAPI(pickCode string, ua string) (*
 // Download get download info with pickcode
 func (c *Pan115Client) Download(pickCode string) (*DownloadInfo, error) {
 	return c.DownloadWithUA(pickCode, "")
+}
+
+func buildDownloadHeaders(requestHeaders http.Header, responseCookies []*http.Cookie) http.Header {
+	headers := requestHeaders.Clone()
+	if len(responseCookies) == 0 {
+		return headers
+	}
+
+	cookies := make([]string, 0, len(responseCookies)+1)
+	if existing := strings.TrimSpace(headers.Get("Cookie")); existing != "" {
+		cookies = append(cookies, existing)
+	}
+	for _, cookie := range responseCookies {
+		if cookie == nil {
+			continue
+		}
+		cookies = append(cookies, cookie.String())
+	}
+	if len(cookies) > 0 {
+		headers.Set("Cookie", strings.Join(cookies, "; "))
+	}
+	return headers
 }
 
 type SharedDownloadInfo struct {

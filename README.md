@@ -1,51 +1,47 @@
 # 115driver
 
-A comprehensive Go library for interacting with 115 cloud storage. This package provides a full-featured driver for 115.com's API, supporting login, file operations, upload/download, and more.
+A comprehensive Go library, CLI tool, and MCP server for [115 cloud storage](https://115.com). It provides a full-featured driver for 115.com's API, supporting login, file operations, upload/download, offline downloads, and more.
 
 [![Go Report Card](https://goreportcard.com/badge/github.com/SheltonZhu/115driver)](https://goreportcard.com/report/github.com/SheltonZhu/115driver)
 [![Release](https://img.shields.io/github/release/SheltonZhu/115driver)](https://github.com/SheltonZhu/115driver/releases)
 [![Go Reference](https://pkg.go.dev/badge/github.com/SheltonZhu/115driver/v4.svg)](https://pkg.go.dev/github.com/SheltonZhu/115driver)
+[![Go Version](https://img.shields.io/badge/Go-1.23+-00ADD8?logo=go)](https://go.dev/)
 [![License](https://img.shields.io/:License-MIT-orange.svg)](https://raw.githubusercontent.com/SheltonZhu/115driver/main/LICENSE)
 
+## Table of Contents
+
+- [Features](#features)
+- [Installation](#installation)
+- [Quick Start](#quick-start)
+- [CLI](#cli)
+- [MCP Server](#mcp-server)
+- [API Reference](#api-reference)
+- [Troubleshooting](#troubleshooting)
+- [Project Structure](#project-structure)
+- [Contributing](#contributing)
+- [License](#license)
+
+## Features
+
+**Authentication** — Cookie-based login, QR code login, and user identity verification.
+
+**File Operations** — List, rename, move, copy, delete, download, upload (with rapid upload via SHA1 deduplication and multipart upload via Aliyun OSS), search with filters, and get file info/statistics.
+
+**Offline Downloads** — Add HTTP, ED2K, and magnet link download tasks; list, delete, and clear tasks.
+
+**Share** — Create share links and download files via share code.
+
+**Recycle Bin** — List, restore, and permanently delete items.
+
+**CLI** — Full-featured command-line interface with colored table output, JSON mode for scripts, shell completions, and multiple profile support.
+
+**MCP Server** — [Model Context Protocol](https://modelcontextprotocol.io/) server for AI application integration (Claude Desktop, Cursor, etc.).
 
 ## Installation
 
 ```bash
 go get github.com/SheltonZhu/115driver
 ```
-
-## Features
-
-### Authentication
-- [X] Import credentials from cookies
-- [X] QR code login
-- [X] Get signed-in user information
-
-### File Operations
-- [X] List files and directories
-- [X] Rename files and directories
-- [X] Move files and directories
-- [X] Copy files and directories
-- [X] Delete files and directories
-- [X] Create directories
-- [X] Download files
-- [X] Upload files
-- [X] Rapid upload (similar to Google Drive's rapid upload)
-- [X] Search files
-- [X] Get file information by ID
-- [X] Get file statistics
-- [X] Download files via share code
-- [X] Offline download
-
-### Recycle Bin
-- [X] List deleted items
-- [X] Restore deleted items
-- [X] Clean recycle bin
-
-### Additional Features
-- [X] Share files via share code
-- [X] File tagging
-- [X] Batch operations
 
 ## Quick Start
 
@@ -60,19 +56,19 @@ import (
 )
 
 func main() {
-    // Create credentials from cookie string
+    // Option 1: Import credentials from cookie string
     cr, err := driver.CredentialFromCookie("your_cookie_string")
     if err != nil {
         log.Fatalf("Failed to create credential: %v", err)
     }
 
-    // Or create manually
-    cr := &driver.Credential{
-        UID:  "your_uid",
-        CID:  "your_cid",
-        SEID: "your_seid",
-        KID:  "your_kid",
-    }
+    // Option 2: Create credentials manually
+    // cr := &driver.Credential{
+    //     UID:  "your_uid",
+    //     CID:  "your_cid",
+    //     SEID: "your_seid",
+    //     KID:  "your_kid",
+    // }
 
     // Create client with credentials
     client := driver.Default().ImportCredential(cr)
@@ -86,240 +82,211 @@ func main() {
 }
 ```
 
-### Download a File
+### Common Operations
+
+The examples below assume you have an authenticated `client` (see Basic Usage above).
 
 ```go
-package main
+// Download a file using pickcode
+downloadInfo, err := client.Download("pickcode_here")
+if err != nil { /* handle error */ }
+fileReader, _ := downloadInfo.Get()
+defer fileReader.Close()
+// write fileReader to file...
+```
 
-import (
-    "github.com/SheltonZhu/115driver/pkg/driver"
-    "io"
-    "log"
-    "os"
+```go
+// Upload a file (auto-selects rapid upload or multipart via OSS)
+file, _ := os.Open("/path/to/local/file.zip")
+defer file.Close()
+fileInfo, _ := file.Stat()
+uploadID, err := client.RapidUploadOrByOSS(
+    "0",            // parent directory ID ("0" for root)
+    fileInfo.Name(),
+    fileInfo.Size(),
+    file,
 )
+```
 
-func main() {
-    client := driver.Default()
-
-    // Create credentials and login
-    cr, _ := driver.CredentialFromCookie("your_cookie")
-    client = client.ImportCredential(cr)
-    client.LoginCheck()
-
-    // Download a file using pickcode
-    pickCode := "abc123"
-    downloadInfo, err := client.Download(pickCode)
-    if err != nil {
-        log.Fatalf("Download failed: %v", err)
-    }
-
-    // Save the file
-    outFile, err := os.Create("/path/to/save/file.zip")
-    if err != nil {
-        log.Fatalf("Failed to create file: %v", err)
-    }
-    defer outFile.Close()
-
-    fileReader, err := downloadInfo.Get()
-    if err != nil {
-        log.Fatalf("Failed to get file reader: %v", err)
-    }
-    defer fileReader.Close()
-
-    if _, err := io.Copy(outFile, fileReader); err != nil {
-        log.Fatalf("Failed to save file: %v", err)
-    }
-
-    log.Println("Download completed!")
+```go
+// List files in root directory
+files, err := client.List("0")
+for _, f := range files {
+    log.Printf("File: %s, Size: %d, Type: %s", f.Name, f.Size, f.Type)
 }
 ```
 
-### Upload a File
-
 ```go
-package main
-
-import (
-    "github.com/SheltonZhu/115driver/pkg/driver"
-    "log"
-    "os"
-)
-
-func main() {
-    client := driver.Default()
-
-    // Create credentials and login
-    cr, _ := driver.CredentialFromCookie("your_cookie")
-    client = client.ImportCredential(cr)
-    client.LoginCheck()
-
-    // Open the file
-    file, err := os.Open("/path/to/local/file.zip")
-    if err != nil {
-        log.Fatalf("Failed to open file: %v", err)
-    }
-    defer file.Close()
-
-    // Get file info
-    fileInfo, err := file.Stat()
-    if err != nil {
-        log.Fatalf("Failed to get file info: %v", err)
-    }
-
-    // Rapid upload (fast upload using file hash)
-    uploadID, err := client.RapidUploadOrByOSS(
-        "0", // parent directory ID (0 for root)
-        fileInfo.Name(),
-        fileInfo.Size(),
-        file,
-    )
-    if err != nil {
-        log.Fatalf("Upload failed: %v", err)
-    }
-
-    log.Printf("Upload started, init response: %+v", uploadID)
+// Search for files
+results, err := client.Search(&driver.SearchOption{
+    SearchValue: "document",
+    Limit:       100,
+})
+for _, r := range results.Files {
+    log.Printf("File: %s, Size: %d", r.Name, r.Size)
 }
 ```
 
-### Rapid Upload
-
 ```go
-package main
-
-import (
-    "github.com/SheltonZhu/115driver/pkg/driver"
-    "io"
-    "log"
-    "os"
+// Add offline download task
+taskIDs, err := client.AddOfflineTaskURIs(
+    []string{"https://example.com/file.zip"},
+    "0", // "0" for root directory
 )
-
-func main() {
-    client := driver.Default()
-
-    // Create credentials and login
-    cr, _ := driver.CredentialFromCookie("your_cookie")
-    client = client.ImportCredential(cr)
-    client.LoginCheck()
-
-    // Open the file
-    file, err := os.Open("/path/to/local/file.zip")
-    if err != nil {
-        log.Fatalf("Failed to open file: %v", err)
-    }
-    defer file.Close()
-
-    // Get file info
-    fileInfo, err := file.Stat()
-    if err != nil {
-        log.Fatalf("Failed to get file info: %v", err)
-    }
-
-    // Rapid upload using file hash
-    uploadID, err := client.RapidUploadOrByOSS(
-        "0", // parent directory ID (0 for root)
-        fileInfo.Name(),
-        fileInfo.Size(),
-        file,
-    )
-    if err != nil {
-        log.Fatalf("Rapid upload failed: %v", err)
-    }
-
-    log.Printf("Rapid upload started, init response: %+v", uploadID)
-}
 ```
 
-### List Files in a Directory
+## CLI
 
-```go
-package main
+115driver includes a CLI tool for interacting with 115 cloud storage from the command line, designed for both human use (colored table output) and AI agent consumption (`--json` flag).
 
-import (
-    "github.com/SheltonZhu/115driver/pkg/driver"
-    "log"
-)
+### Install
 
-func main() {
-    client := driver.Default()
-
-    // Create credentials and login
-    cr, _ := driver.CredentialFromCookie("your_cookie")
-    client = client.ImportCredential(cr)
-    client.LoginCheck()
-
-    // List files in root directory
-    files, err := client.List("0")
-    if err != nil {
-        log.Fatalf("List failed: %v", err)
-    }
-
-    for _, file := range files {
-        log.Printf("File: %s, Size: %d, Type: %s", file.Name, file.Size, file.Type)
-    }
-}
+```bash
+go install github.com/SheltonZhu/115driver/cmd/115driver@latest
 ```
 
-### Search Files
+### Authentication
 
-```go
-package main
+```bash
+# QR code login (interactive)
+115driver login
 
-import (
-    "github.com/SheltonZhu/115driver/pkg/driver"
-    "log"
-)
+# Cookie login
+115driver login --cookie "UID=xxx;CID=xxx;SEID=xxx;KID=xxx"
 
-func main() {
-    client := driver.Default()
+# Verify identity
+115driver whoami
 
-    // Create credentials and login
-    cr, _ := driver.CredentialFromCookie("your_cookie")
-    client = client.ImportCredential(cr)
-    client.LoginCheck()
-
-    // Search for files
-    keyword := "document"
-    results, err := client.Search(&driver.SearchOption{
-        SearchValue: keyword,
-        Limit:       100,
-    })
-    if err != nil {
-        log.Fatalf("Search failed: %v", err)
-    }
-
-    log.Printf("Found %d results", results.Count)
-    for _, result := range results.Files {
-        log.Printf("File: %s, Size: %d", result.Name, result.Size)
-    }
-}
+# Account and storage info
+115driver info
 ```
 
-### Offline Download
+Credentials are stored in `~/.115driver/config.toml` and support multiple profiles.
 
-```go
-package main
+### Authentication Priority
 
-import (
-    "github.com/SheltonZhu/115driver/pkg/driver"
-    "log"
-)
+1. `--cookie` flag
+2. `DRIVER115_COOKIE` environment variable
+3. Config file (`~/.115driver/config.toml`)
 
-func main() {
-    client := driver.Default()
+Additional env vars: `DRIVER115_CONFIG` (config path), `DRIVER115_PROFILE` (profile name).
 
-    // Create credentials and login
-    cr, _ := driver.CredentialFromCookie("your_cookie")
-    client = client.ImportCredential(cr)
-    client.LoginCheck()
+### Commands
 
-    // Add offline download task
-    url := "https://example.com/file.zip"
-    taskIDs, err := client.AddOfflineTaskURIs([]string{url}, "0") // "0" for root directory
-    if err != nil {
-        log.Fatalf("Offline download failed: %v", err)
+```bash
+# List files
+115driver ls /path/to/dir
+115driver ls -l /path/to/dir          # detailed view
+
+# File info
+115driver stat /path/to/file
+
+# Account and storage info
+115driver info
+
+# Create directories
+115driver mkdir /new/dir
+115driver mkdir -p /deep/nested/dir   # create parents
+
+# Move / Copy / Rename / Delete
+115driver mv /source/file /dest/dir
+115driver cp /source/file /dest/dir
+115driver rename /path/to/file new_name
+115driver rm /path/to/file
+
+# Upload & Download
+115driver upload /local/file /remote/dir
+115driver download /remote/file /local/dir
+
+# Search
+115driver search keyword
+115driver search keyword -t video     # filter by type
+115driver search keyword --sort size  # sort results
+
+# Offline downloads (HTTP/ED2K/magnet)
+115driver offline add <url>
+115driver offline add <url> -d /save/dir
+115driver offline list
+115driver offline rm <hash>
+```
+
+### JSON Output
+
+All commands support `--json` for machine-readable output:
+
+```bash
+115driver --json ls /path/to/dir
+115driver --json stat /path/to/file
+115driver --json info
+```
+
+### Shell Completion
+
+```bash
+# Bash
+echo 'source <(115driver completion bash)' >> ~/.bashrc
+
+# Zsh
+echo 'source <(115driver completion zsh)' >> ~/.zshrc
+
+# Fish
+115driver completion fish > ~/.config/fish/completions/115driver.fish
+```
+
+## MCP Server
+
+115driver includes an MCP (Model Context Protocol) server for AI application integration (Claude Desktop, Cursor, etc.).
+
+### Install
+
+**Option 1: go install**
+
+```bash
+go install github.com/SheltonZhu/115driver/mcp@latest
+```
+
+**Option 2: build from source**
+
+```bash
+git clone https://github.com/SheltonZhu/115driver.git
+cd 115driver
+go build -o 115driver-mcp-server ./mcp/
+```
+
+### Usage
+
+```bash
+# If installed via go install:
+mcp --cookie="UID=xxx;CID=xxx;SEID=xxx;KID=xxx"
+
+# If built from source:
+./115driver-mcp-server --cookie="UID=xxx;CID=xxx;SEID=xxx;KID=xxx"
+```
+
+### Available Tools
+
+| Category | Tools |
+|----------|-------|
+| **Account** | `getAccountInfo` |
+| **Directory** | `listDirectory` |
+| **File** | `stat`, `mkdir`, `delete`, `rename`, `move`, `copy`, `upload_from_url`, `upload_from_local`, `download_file`, `get_download_info` |
+| **Search** | `search` |
+| **Offline** | `listOfflineTasks`, `addOfflineTaskURIs`, `deleteOfflineTasks`, `clearOfflineTasks` |
+| **Share** | `getShareSnap` |
+| **Recycle** | `listRecycleBin`, `revertRecycleBin`, `cleanRecycleBin` |
+
+### Configure with Claude Desktop
+
+Add to your `claude_desktop_config.json`:
+
+```json
+{
+  "mcpServers": {
+    "115driver": {
+      "command": "mcp",
+      "args": ["--cookie=UID=xxx;CID=xxx;SEID=xxx;KID=xxx"]
     }
-
-    log.Printf("Offline download task created with hash: %s", taskIDs[0])
+  }
 }
 ```
 
@@ -354,20 +321,19 @@ The 115 API may have rate limits. If you encounter rate limiting errors:
 ## Project Structure
 
 ```
-115driver/
+115driver/                    # Go 1.23+
+├── cmd/
+│   └── 115driver/            # CLI entry point (go install binary)
+├── cli/                      # CLI implementation
+│   ├── cmd/                  # Cobra commands
+│   └── internal/             # Internal packages (auth, output, resolver)
+├── internal/                 # Shared app-level helpers
 ├── pkg/
-│   ├── driver/          # Core driver implementation
-│   │   ├── client.go    # Client interface
-│   │   ├── login.go     # Authentication
-│   │   ├── file.go      # File operations
-│   │   ├── upload.go    # Upload functionality
-│   │   ├── download.go  # Download functionality
-│   │   ├── search.go    # Search
-│   │   ├── share.go     # Share files
-│   │   ├── offline.go   # Offline download
-│   │   └── ...          # Other modules
-│   └── crypto/          # Cryptography utilities
-└── mcp/                 # MCP server implementation
+│   ├── driver/               # Core driver (client, login, file, upload, download, search, share, offline)
+│   └── crypto/               # Cryptography utilities (ECDH, AES, RSA)
+└── mcp/                      # MCP server (stdin/stdout JSON-RPC 2.0)
+    ├── main.go               # Entry point
+    └── server/tools/         # Tool implementations (account, dir, file, search, offline, share, recycle)
 ```
 
 ## Star History
